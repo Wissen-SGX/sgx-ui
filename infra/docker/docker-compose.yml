@@ -1,0 +1,18 @@
+services:
+  sgx-frontend:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      args:
+        BUILD_ENV: ${BUILD_ENV:-prod}
+    image: ${IMAGE_NAME:-sgx-frontend}:${BUILD_ENV:-prod}
+    container_name: sgx-frontend-${BUILD_ENV:-prod}
+    ports:
+      - "${PORT:-80}:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s

@@ -1,0 +1,44 @@
+{
+  "name": "host",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:local": "vite build",
+    "build:dev": "vite build --mode dev",
+    "build:uat": "vite build --mode uat",
+    "build:prod": "vite build --mode prod",
+    "build:dev-preview": "vite build --mode dev-preview",
+    "build:uat-preview": "vite build --mode uat-preview",
+    "build:prod-preview": "vite build --mode prod-preview",
+    "preview": "vite preview",
+    "preview:local": "vite preview",
+    "preview:dev": "vite preview --mode dev",
+    "preview:uat": "vite preview --mode uat",
+    "preview:prod": "vite preview --mode prod",
+    "preview:dev-preview": "vite preview",
+    "preview:uat-preview": "vite preview",
+    "preview:prod-preview": "vite preview",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
+  },
+  "dependencies": {
+    "@module-federation/vite": "1.14.3",
+    "@reduxjs/toolkit": "2.11.2",
+    "@sgx/shared": "file:../../packages/shared",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-router-dom": "7.14.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "5.0.0",
+    "typescript": "6.0.2",
+    "vite": "7.3.2",
+    "@tailwindcss/postcss": "^4.2.2",
+    "postcss": "8.5.6",
+    "tailwindcss": "^4.2.2"
+  }
+}

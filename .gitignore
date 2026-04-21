@@ -1,0 +1,35 @@
+# Node modules
+node_modules/
+
+# Vite build output
+dist/
+build/
+
+# Cache and temp files
+.cache/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tmp
+*.temp
+
+# Environment files — track templates, ignore local overrides with secrets
+.env.local
+.env.*.local
+config/env/.env.docker
+
+# IDE folders
+.vscode/
+.idea/
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vite specific cache
+vite.cache/
+node_modules/.vite/
+.__mf__temp/

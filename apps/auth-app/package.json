@@ -1,0 +1,37 @@
+{
+  "name": "auth",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "vite build --mode dev",
+    "build:uat": "vite build --mode uat",
+    "build:prod": "vite build --mode prod",
+    "preview": "vite preview",
+    "preview:dev": "vite preview --mode dev",
+    "preview:uat": "vite preview --mode uat",
+    "preview:prod": "vite preview --mode prod",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
+  },
+  "dependencies": {
+    "@module-federation/vite": "1.14.3",
+    "@reduxjs/toolkit": "2.11.2",
+    "@sgx/shared": "file:../../packages/shared",
+    "@sgx/ui": "file:../../packages/ui",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-router-dom": "7.14.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "5.0.0",
+    "typescript": "6.0.2",
+    "vite": "7.3.2",
+    "@tailwindcss/postcss": "^4.2.2",
+    "postcss": "8.5.6",
+    "tailwindcss": "^4.2.2"
+  }
+}

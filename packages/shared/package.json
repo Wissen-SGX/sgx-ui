@@ -1,0 +1,13 @@
+{
+  "name": "@sgx/shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
+  }
+}
