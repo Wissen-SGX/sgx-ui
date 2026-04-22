@@ -20,6 +20,8 @@ import {
   initialWeightingConfigurations,
   initialFormulaFields,
 } from '@/features/parameters-configuration/data';
+import { BacktestEntry } from '@/features/backtest/types';
+import { initialBacktestEntries } from '@/features/backtest/data';
 
 export type {
   Universe,
@@ -36,6 +38,8 @@ export type {
 };
 
 interface BacktestContextType {
+  backtestEntries: BacktestEntry[];
+  addBacktestEntry: (entry: Omit<BacktestEntry, 'id'>) => void;
   config: BacktestConfiguration;
   updateConfig: (updates: Partial<BacktestConfiguration>) => void;
   resetConfig: () => void;
@@ -112,12 +116,19 @@ const BacktestContext = createContext<BacktestContextType | undefined>(undefined
 
 export function BacktestProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<BacktestConfiguration>(defaultConfig);
+  const [backtestEntries, setBacktestEntries] = useState<BacktestEntry[]>(initialBacktestEntries);
   const [universes, setUniverses] = useState<Universe[]>(initialUniverses);
   const [filterSets, setFilterSets] = useState<FilterSet[]>(initialFilterSets);
   const [rankingRules, setRankingRules] = useState<RankingRule[]>(initialRankingRules);
   const [weightingConfigurations, setWeightingConfigurations] = useState<WeightingConfiguration[]>(initialWeightingConfigurations);
   const [universeConfigurations, setUniverseConfigurations] = useState<UniverseConfiguration[]>(initialUniverseConfigurations);
   const [formulaFields, setFormulaFields] = useState<FormulaField[]>(initialFormulaFields);
+
+  // --- Backtest Entries ---
+  const addBacktestEntry = (entry: Omit<BacktestEntry, 'id'>) => {
+    const newId = `BT-${String(backtestEntries.length + 1).padStart(3, '0')}`;
+    setBacktestEntries(prev => [{ ...entry, id: newId }, ...prev]);
+  };
 
   // --- Config ---
   const updateConfig = (updates: Partial<BacktestConfiguration>) =>
@@ -228,6 +239,7 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   return (
     <BacktestContext.Provider
       value={{
+        backtestEntries, addBacktestEntry,
         config, updateConfig, resetConfig,
         addFilter, updateFilter, deleteFilter,
         addRankingFactor, updateRankingFactor, deleteRankingFactor,
