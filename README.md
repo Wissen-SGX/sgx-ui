@@ -1,7 +1,7 @@
 # sgx-frontend
 
 A microfrontend architecture built with Vite, React, and TypeScript.
-This repository contains three separate apps wired together with Module Federation via `@originjs/vite-plugin-federation`.
+This repository contains three separate apps wired together with Module Federation via `@module-federation/vite`.
 
 ## Project Overview
 

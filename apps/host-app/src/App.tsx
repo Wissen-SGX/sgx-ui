@@ -1,16 +1,17 @@
-import { Suspense, lazy, useState, useEffect } from 'react';
-import './index.css';
+import { Suspense, lazy, useState, useEffect } from "react";
+import { LoadingScreen } from "@sgx/ui";
+import "./index.css";
 
 const AuthApp = lazy(() =>
-  import('auth/App').catch(() => ({
+  import("auth/App").catch(() => ({
     default: () => <div>Auth failed to load</div>,
-  }))
+  })),
 );
 
 const MainApp = lazy(() =>
-  import('index-studio/App').catch(() => ({
+  import("index-studio/App").catch(() => ({
     default: () => <div>Main failed to load</div>,
-  }))
+  })),
 );
 
 function usePathname() {
@@ -18,8 +19,8 @@ function usePathname() {
 
   useEffect(() => {
     const handler = () => setPathname(window.location.pathname);
-    window.addEventListener('popstate', handler);
-    return () => window.removeEventListener('popstate', handler);
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
   }, []);
 
   return pathname;
@@ -29,12 +30,8 @@ export default function App() {
   const pathname = usePathname();
 
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center text-slate-600">Loading...</div>
-      }
-    >
-      {pathname.startsWith('/auth') ? <AuthApp /> : <MainApp />}
+    <Suspense fallback={<LoadingScreen isFading={false} />}>
+      {pathname.startsWith("/auth") ? <AuthApp /> : <MainApp />}
     </Suspense>
   );
 }
