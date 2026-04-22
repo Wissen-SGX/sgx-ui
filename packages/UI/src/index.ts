@@ -69,4 +69,5 @@ export {
   FormMessage,
   FormField,
 } from './components/form/Form';
+export { default as LoadingScreen } from "./components/loader/LoadingScreen";
 export { cn } from './utils';
