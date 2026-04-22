@@ -1,7 +1,7 @@
 export * from './universe.types';
 export * from './filter.types';
 export * from './generateUniverse.types';
-// backtest.types re-exports FilterRule — import only the new symbols to avoid duplicates
+// index-configuration.types re-exports FilterRule — import only the new symbols to avoid duplicates
 export type {
   IndexType,
   ReturnType,
@@ -16,4 +16,4 @@ export type {
   WeightingConfiguration,
   FormulaField,
   BacktestConfiguration,
-} from './backtest.types';
+} from './index-configuration.types';

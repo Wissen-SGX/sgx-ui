@@ -69,7 +69,7 @@ export default function GenerateUniversePage() {
   };
 
   return (
-    <div className="max-w-7xl">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl mb-1" style={{ color: "#0B236B" }}>

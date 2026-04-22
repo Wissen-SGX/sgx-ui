@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 import { ChevronLeft, ChevronRight, ChevronDown, LayoutGrid } from 'lucide-react';
 
 import { SidebarProps } from '@layout/types/layout.types';
@@ -11,6 +11,7 @@ import sgxLogo from '@layout/assets/sgxLogo.png';
 import sgxLogoCollapsed from '@layout/assets/sgxLogoCollapsed.png';
 
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
+  const { pathname } = useLocation();
   const [openSections, setOpenSections] = useState<string[]>([
     '/backtest',
     '/parameters',
@@ -95,36 +96,32 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               {/* Sub-items */}
               {!isCollapsed && item.subItems && isSectionOpen && (
                 <div className="ml-4 mt-1 space-y-1 border-l-2" style={{ borderColor: '#1a3a6b' }}>
-                  {item.subItems.map((subItem) => (
-                    <NavLink
-                      key={subItem.path}
-                      to={subItem.path}
-                      end
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all ml-4 ${
+                  {item.subItems.map((subItem) => {
+                    const isActive = pathname.startsWith(subItem.path);
+                    return (
+                      <NavLink
+                        key={subItem.path}
+                        to={subItem.path}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all ml-4 ${
                           isActive ? '' : 'hover:bg-[#0d1b3a]'
-                        }`
-                      }
-                      style={({ isActive }) => ({
-                        backgroundColor: isActive ? '#0094B3' : 'transparent',
-                        color: isActive ? '#0B236B' : '#9ca3af',
-                        fontWeight: isActive ? '500' : '400',
-                      })}
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <subItem.icon
-                            size={18}
-                            style={{
-                              color: isActive ? '#0B236B' : '#9ca3af',
-                              flexShrink: 0,
-                            }}
-                          />
-                          {subItem.label}
-                        </>
-                      )}
-                    </NavLink>
-                  ))}
+                        }`}
+                        style={{
+                          backgroundColor: isActive ? '#0094B3' : 'transparent',
+                          color: isActive ? '#0B236B' : '#9ca3af',
+                          fontWeight: isActive ? '500' : '400',
+                        }}
+                      >
+                        <subItem.icon
+                          size={18}
+                          style={{
+                            color: isActive ? '#0B236B' : '#9ca3af',
+                            flexShrink: 0,
+                          }}
+                        />
+                        {subItem.label}
+                      </NavLink>
+                    );
+                  })}
                 </div>
               )}
             </div>
