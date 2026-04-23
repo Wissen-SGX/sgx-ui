@@ -83,7 +83,7 @@ export function BacktestTable({ entries, onRun, onStop }: BacktestTableProps) {
                 key={entry.id}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
                 style={{ borderBottom: index < entries.length - 1 ? '1px solid #E5E7EB' : 'none' }}
-                onClick={() => navigate(`/backtest/${entry.id}`)}
+                onClick={() => navigate(`/backtest/dashboard/${entry.id}`)}
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ export function BacktestTable({ entries, onRun, onStop }: BacktestTableProps) {
                       </button>
                     )}
                     <button
-                      onClick={() => navigate(`/backtest/${entry.id}`)}
+                      onClick={() => navigate(`/backtest/dashboard/${entry.id}`)}
                       className="p-2 hover:bg-gray-100 rounded transition-colors"
                       title="View details"
                     >

@@ -36,7 +36,7 @@ export const routes: RouteObject[] = [
         element: <CreateIndexPage />,
       },
       {
-        path: 'backtest/:id',
+        path: 'backtest/dashboard/:id',
         element: <BacktestDetailPage />,
       },
       {
