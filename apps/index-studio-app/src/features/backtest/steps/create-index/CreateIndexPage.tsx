@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight } from 'lucide-react';
-import { CreateIndexFormState, ReturnTypes } from '@/features/backtest/types';
-import { useBacktest } from '@/contexts/BacktestContext';
-import { StepIndicator } from './components/StepIndicator';
-import { BacktestConfigStep } from './components/BacktestConfigStep';
-import { BacktestParamsStep } from './components/BacktestParamsStep';
-import { ReviewLaunchStep } from './components/ReviewLaunchStep';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
+import { useBacktest } from "@/contexts/BacktestContext";
+import { StepIndicator } from "./components/StepIndicator";
+import { BacktestConfigStep } from "./components/BacktestConfigStep";
+import { BacktestParamsStep } from "./components/BacktestParamsStep";
+import { ReviewLaunchStep } from "./components/ReviewLaunchStep";
 
 const DEFAULT_FORM: CreateIndexFormState = {
-  backtestName: '',
-  indexType: 'Standard Index',
+  backtestName: "",
+  indexType: "Standard Index",
   returnTypes: {
     priceReturn: false,
     totalReturn: true,
@@ -18,26 +18,28 @@ const DEFAULT_FORM: CreateIndexFormState = {
     decrementPoints: true,
     decrementPercent: false,
   },
-  decrementFrequency: 'Daily',
-  decrementBasis: '365 Days',
-  customDays: '',
-  totalPoints: '',
-  totalPercentage: '',
-  baseCurrency: 'SGD',
-  baseValue: '1000',
-  selectedCalendars: ['XSES - SINGAPORE EXCHANGE'],
-  description: '',
-  selectedUniverse: '',
-  selectedFilters: '',
-  selectedRanking: '',
-  selectedWeighting: '',
+  decrementFrequency: "Daily",
+  decrementBasis: "365 Days",
+  customDays: "",
+  totalPoints: "",
+  totalPercentage: "",
+  baseCurrency: "SGD",
+  baseValue: "1000",
+  selectedCalendars: ["XSES - SINGAPORE EXCHANGE"],
+  description: "",
+  selectedUniverse: "",
+  selectedFilters: "",
+  selectedRanking: "",
+  selectedWeighting: "",
+  uploadedFile: null,
 };
 
 export default function CreateIndexPage() {
   const navigate = useNavigate();
   const { addBacktestEntry } = useBacktest();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formState, setFormState] = useState<CreateIndexFormState>(DEFAULT_FORM);
+  const [formState, setFormState] =
+    useState<CreateIndexFormState>(DEFAULT_FORM);
 
   const handleChange = (updates: Partial<CreateIndexFormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
@@ -46,11 +48,25 @@ export default function CreateIndexPage() {
   const handleReturnTypeChange = (type: keyof ReturnTypes) => {
     setFormState((prev) => {
       const rt = prev.returnTypes;
-      if (type === 'decrementPoints') {
-        return { ...prev, returnTypes: { ...rt, decrementPoints: !rt.decrementPoints, decrementPercent: false } };
+      if (type === "decrementPoints") {
+        return {
+          ...prev,
+          returnTypes: {
+            ...rt,
+            decrementPoints: !rt.decrementPoints,
+            decrementPercent: false,
+          },
+        };
       }
-      if (type === 'decrementPercent') {
-        return { ...prev, returnTypes: { ...rt, decrementPercent: !rt.decrementPercent, decrementPoints: false } };
+      if (type === "decrementPercent") {
+        return {
+          ...prev,
+          returnTypes: {
+            ...rt,
+            decrementPercent: !rt.decrementPercent,
+            decrementPoints: false,
+          },
+        };
       }
       return { ...prev, returnTypes: { ...rt, [type]: !rt[type] } };
     });
@@ -73,40 +89,70 @@ export default function CreateIndexPage() {
     if (currentStep > 1) setCurrentStep((s) => s - 1);
   };
 
+  const buildEntryBase = () => ({
+    name: formState.backtestName || "Untitled Index",
+    description: formState.description || "",
+    type: (formState.indexType === "Fixed Basket"
+      ? "fixed basket"
+      : "standard") as "fixed basket" | "standard",
+    typeLabel:
+      formState.indexType === "Fixed Basket" ? "Fixed Basket" : "Standard",
+  });
+
+  const handleSaveAsDraft = () => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    addBacktestEntry({
+      ...buildEntryBase(),
+      period: { start: formattedDate, end: formattedDate },
+      status: "Draft",
+      statusColor: "#94A3B8",
+      statusBg: "#F1F5F9",
+      performance: "Backtest not running yet",
+      performanceValue: null,
+    });
+    navigate("/backtest/dashboard");
+  };
+
   const handleSubmit = () => {
     const today = new Date();
-    const formattedDate = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    addBacktestEntry({
-      name: formState.backtestName || 'Untitled Index',
-      description: formState.description || '',
-      type: formState.indexType === 'Fixed Basket' ? 'fixed basket' : 'standard',
-      typeLabel: formState.indexType === 'Fixed Basket' ? 'Fixed Basket' : 'Standard',
-      period: { start: formattedDate, end: formattedDate },
-      status: 'Running',
-      statusColor: '#F59E0B',
-      statusBg: '#FEF3C7',
-      performance: 'Awaiting Results',
-      performanceValue: null,
-      icon: 'loading',
+    const formattedDate = today.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
-    navigate('/backtest/dashboard');
+    addBacktestEntry({
+      ...buildEntryBase(),
+      period: { start: formattedDate, end: formattedDate },
+      status: "Running",
+      statusColor: "#F59E0B",
+      statusBg: "#FEF3C7",
+      performance: "Awaiting Results",
+      performanceValue: null,
+      icon: "loading",
+    });
+    navigate("/backtest/dashboard");
   };
 
   const stepLabel =
     currentStep === 1
-      ? 'Backtest Configuration'
+      ? "Backtest Configuration"
       : currentStep === 2
-      ? 'Backtest Parameters'
-      : 'Review & Launch';
+        ? "Backtest Parameters"
+        : "Review & Launch";
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <button
-          onClick={() => navigate('/backtest/dashboard')}
+          onClick={() => navigate("/backtest/dashboard")}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
-          <ArrowLeft size={20} style={{ color: '#0B236B' }} />
+          <ArrowLeft size={20} style={{ color: "#0B236B" }} />
         </button>
         <div>
           <h1>Create Index</h1>
@@ -118,7 +164,10 @@ export default function CreateIndexPage() {
 
       <StepIndicator currentStep={currentStep} />
 
-      <div className="bg-white rounded-lg border p-6" style={{ borderColor: '#E5E7EB' }}>
+      <div
+        className="bg-white rounded-lg border p-6"
+        style={{ borderColor: "#E5E7EB" }}
+      >
         {currentStep === 1 && (
           <BacktestConfigStep
             formState={formState}
@@ -136,15 +185,15 @@ export default function CreateIndexPage() {
           onClick={handlePrevious}
           disabled={currentStep === 1}
           className="px-5 py-2.5 rounded-lg border text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ borderColor: '#E5E7EB', color: '#374151' }}
+          style={{ borderColor: "#E5E7EB", color: "#374151" }}
         >
           Previous
         </button>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/backtest/dashboard')}
+            onClick={handleSaveAsDraft}
             className="px-5 py-2.5 rounded-lg border text-sm transition-colors"
-            style={{ borderColor: '#E5E7EB', color: '#374151' }}
+            style={{ borderColor: "#E5E7EB", color: "#374151" }}
           >
             Save as Draft
           </button>
@@ -152,7 +201,7 @@ export default function CreateIndexPage() {
             <button
               onClick={handleNext}
               className="px-5 py-2.5 rounded-lg text-white text-sm flex items-center gap-2"
-              style={{ backgroundColor: '#0094B3' }}
+              style={{ backgroundColor: "#0094B3" }}
             >
               Next
               <ChevronRight size={18} />
@@ -161,7 +210,7 @@ export default function CreateIndexPage() {
             <button
               onClick={handleSubmit}
               className="px-5 py-2.5 rounded-lg text-white text-sm"
-              style={{ backgroundColor: '#0094B3' }}
+              style={{ backgroundColor: "#0094B3" }}
             >
               Launch Backtest
             </button>

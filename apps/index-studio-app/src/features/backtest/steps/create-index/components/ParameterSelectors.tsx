@@ -30,14 +30,18 @@ export function ParameterSelectors({
     <div className="border-t pt-6" style={{ borderColor: '#E5E7EB' }}>
       <h3 className="text-md mb-4" style={{ color: '#0B236B' }}>Select Parameters</h3>
       <div className="grid grid-cols-2 gap-6">
-        <div>
+        <div className={isFixedBasket ? 'opacity-50 pointer-events-none' : ''}>
           <label className="block text-sm mb-2" style={{ color: '#0B236B' }}>Universe</label>
           <CustomDropdown
             options={universeOptions}
             value={selectedUniverse}
             onChange={(val) => onChange({ selectedUniverse: val, selectedFilters: '' })}
             placeholder="Select universe"
+            disabled={isFixedBasket}
           />
+          {isFixedBasket && (
+            <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Not applicable for Fixed Basket</p>
+          )}
         </div>
 
         <div className={isFixedBasket ? 'opacity-50 pointer-events-none' : ''}>
