@@ -97,6 +97,9 @@ export default function CreateIndexPage() {
       : "standard") as "fixed basket" | "standard",
     typeLabel:
       formState.indexType === "Fixed Basket" ? "Fixed Basket" : "Standard",
+    ...(formState.indexType === "Fixed Basket" && formState.uploadedFile
+      ? { uploadedFileName: formState.uploadedFile.name }
+      : {}),
   });
 
   const getReturnTypeLabel = (): string => {

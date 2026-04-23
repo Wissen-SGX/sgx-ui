@@ -15,6 +15,7 @@ import {
   Share2,
   CheckCircle,
   Rocket,
+  Paperclip,
 } from 'lucide-react';
 import { useBacktest } from '@/contexts/BacktestContext';
 import { BacktestDetailData, BacktestEntry, BacktestStatus } from '@/features/backtest/types';
@@ -238,6 +239,21 @@ function OverviewTab({
 
   return (
     <div className="space-y-6">
+      {entry.uploadedFileName && (
+        <div className="border rounded-lg p-5 bg-white flex items-center gap-3" style={{ borderColor: '#E5E7EB' }}>
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+            style={{ backgroundColor: '#E0F2FE' }}
+          >
+            <Paperclip size={18} style={{ color: '#0094B3' }} />
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Uploaded Basket File</div>
+            <div className="text-sm font-medium" style={{ color: '#0B236B' }}>{entry.uploadedFileName}</div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-6">
         <div className="border rounded-lg p-6" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
           <div className="text-xs text-gray-600 uppercase mb-3">Status</div>

@@ -145,11 +145,45 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   }, [backtestDetails]);
 
   const getBacktestDetail = (id: string) => backtestDetails.find(d => d.id === id);
-  const [universes, setUniverses] = useState<Universe[]>(initialUniverses);
-  const [filterSets, setFilterSets] = useState<FilterSet[]>(initialFilterSets);
+  const [universes, setUniverses] = useState<Universe[]>(() => {
+    try {
+      const stored = localStorage.getItem('universes');
+      return stored ? (JSON.parse(stored) as Universe[]) : initialUniverses;
+    } catch {
+      return initialUniverses;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem('universes', JSON.stringify(universes));
+  }, [universes]);
+
+  const [filterSets, setFilterSets] = useState<FilterSet[]>(() => {
+    try {
+      const stored = localStorage.getItem('filterSets');
+      return stored ? (JSON.parse(stored) as FilterSet[]) : initialFilterSets;
+    } catch {
+      return initialFilterSets;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem('filterSets', JSON.stringify(filterSets));
+  }, [filterSets]);
+
   const [rankingRules, setRankingRules] = useState<RankingRule[]>(initialRankingRules);
   const [weightingConfigurations, setWeightingConfigurations] = useState<WeightingConfiguration[]>(initialWeightingConfigurations);
-  const [universeConfigurations, setUniverseConfigurations] = useState<UniverseConfiguration[]>(initialUniverseConfigurations);
+
+  const [universeConfigurations, setUniverseConfigurations] = useState<UniverseConfiguration[]>(() => {
+    try {
+      const stored = localStorage.getItem('universeConfigurations');
+      return stored ? (JSON.parse(stored) as UniverseConfiguration[]) : initialUniverseConfigurations;
+    } catch {
+      return initialUniverseConfigurations;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem('universeConfigurations', JSON.stringify(universeConfigurations));
+  }, [universeConfigurations]);
+
   const [formulaFields, setFormulaFields] = useState<FormulaField[]>(initialFormulaFields);
 
   // --- Backtest Entries ---

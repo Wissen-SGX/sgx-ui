@@ -16,6 +16,7 @@ export interface BacktestEntry {
   performanceValue: number | null;
   trend?: 'up' | 'down';
   icon?: 'loading' | 'error';
+  uploadedFileName?: string;
 }
 
 export interface BacktestStatusCounts {
