@@ -36,7 +36,7 @@ const DEFAULT_FORM: CreateIndexFormState = {
 
 export default function CreateIndexPage() {
   const navigate = useNavigate();
-  const { addBacktestEntry } = useBacktest();
+  const { addBacktestEntryWithDetail } = useBacktest();
   const [currentStep, setCurrentStep] = useState(1);
   const [formState, setFormState] =
     useState<CreateIndexFormState>(DEFAULT_FORM);
@@ -99,6 +99,44 @@ export default function CreateIndexPage() {
       formState.indexType === "Fixed Basket" ? "Fixed Basket" : "Standard",
   });
 
+  const getReturnTypeLabel = (): string => {
+    const rt = formState.returnTypes;
+    const active: string[] = [];
+    if (rt.priceReturn) active.push("Price Return");
+    if (rt.totalReturn) active.push("Total Return");
+    if (rt.netTotalReturn) active.push("Net Total Return");
+    if (rt.decrementPoints) active.push("Decrement (Points)");
+    if (rt.decrementPercent) active.push("Decrement (%)");
+    return active.join(", ") || "--";
+  };
+
+  const buildDetailBase = (formattedDate: string) => ({
+    totalReturn: "--",
+    annualizedReturn: "--",
+    volatility: "--",
+    sharpeRatio: "--",
+    maxDrawdown: "--",
+    sortino: "--",
+    calmar: "--",
+    configuration: {
+      indexType: formState.indexType,
+      returnType: getReturnTypeLabel(),
+      rebalanceFrequency: "--",
+      currency: formState.baseCurrency,
+      baseValue: formState.baseValue,
+      baseDate: formattedDate,
+      dividendTreatment: "--",
+      weightCeiling: "--",
+      weightingMethod: formState.selectedWeighting || "--",
+    },
+    metadata: {
+      created: formattedDate,
+      completed: null,
+      lastUpdated: formattedDate,
+    },
+    indexLevels: [] as { date: string; value: string; change: string; positive: boolean }[],
+  });
+
   const handleSaveAsDraft = () => {
     const today = new Date();
     const formattedDate = today.toLocaleDateString("en-GB", {
@@ -106,15 +144,18 @@ export default function CreateIndexPage() {
       month: "short",
       year: "numeric",
     });
-    addBacktestEntry({
-      ...buildEntryBase(),
-      period: { start: formattedDate, end: formattedDate },
-      status: "Draft",
-      statusColor: "#94A3B8",
-      statusBg: "#F1F5F9",
-      performance: "Backtest not running yet",
-      performanceValue: null,
-    });
+    addBacktestEntryWithDetail(
+      {
+        ...buildEntryBase(),
+        period: { start: formattedDate, end: formattedDate },
+        status: "Draft",
+        statusColor: "#94A3B8",
+        statusBg: "#F1F5F9",
+        performance: "Backtest not running yet",
+        performanceValue: null,
+      },
+      buildDetailBase(formattedDate),
+    );
     navigate("/backtest/dashboard");
   };
 
@@ -125,16 +166,19 @@ export default function CreateIndexPage() {
       month: "short",
       year: "numeric",
     });
-    addBacktestEntry({
-      ...buildEntryBase(),
-      period: { start: formattedDate, end: formattedDate },
-      status: "Running",
-      statusColor: "#F59E0B",
-      statusBg: "#FEF3C7",
-      performance: "Awaiting Results",
-      performanceValue: null,
-      icon: "loading",
-    });
+    addBacktestEntryWithDetail(
+      {
+        ...buildEntryBase(),
+        period: { start: formattedDate, end: formattedDate },
+        status: "Running",
+        statusColor: "#F59E0B",
+        statusBg: "#FEF3C7",
+        performance: "Awaiting Results",
+        performanceValue: null,
+        icon: "loading",
+      },
+      buildDetailBase(formattedDate),
+    );
     navigate("/backtest/dashboard");
   };
 

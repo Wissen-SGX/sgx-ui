@@ -27,6 +27,8 @@ export default function BacktestDetailPage() {
 
   const entry = backtestEntries.find((e) => e.id === id);
   const detail = getBacktestDetail(id ?? '');
+  console.log('Backtest Entry:', entry);
+  console.log('Backtest Detail:', detail);
 
   if (!entry) {
     return (

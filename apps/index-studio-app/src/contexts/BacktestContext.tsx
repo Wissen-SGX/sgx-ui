@@ -40,6 +40,7 @@ export type {
 interface BacktestContextType {
   backtestEntries: BacktestEntry[];
   addBacktestEntry: (entry: Omit<BacktestEntry, 'id'>) => void;
+  addBacktestEntryWithDetail: (entry: Omit<BacktestEntry, 'id'>, detail: Omit<BacktestDetailData, 'id'>) => void;
   backtestDetails: BacktestDetailData[];
   getBacktestDetail: (id: string) => BacktestDetailData | undefined;
   config: BacktestConfiguration;
@@ -130,7 +131,19 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem('backtestEntries', JSON.stringify(backtestEntries));
   }, [backtestEntries]);
-  const [backtestDetails] = useState<BacktestDetailData[]>(initialBacktestDetails);
+  const [backtestDetails, setBacktestDetails] = useState<BacktestDetailData[]>(() => {
+    try {
+      const stored = localStorage.getItem('backtestDetails');
+      return stored ? (JSON.parse(stored) as BacktestDetailData[]) : initialBacktestDetails;
+    } catch {
+      return initialBacktestDetails;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('backtestDetails', JSON.stringify(backtestDetails));
+  }, [backtestDetails]);
+
   const getBacktestDetail = (id: string) => backtestDetails.find(d => d.id === id);
   const [universes, setUniverses] = useState<Universe[]>(initialUniverses);
   const [filterSets, setFilterSets] = useState<FilterSet[]>(initialFilterSets);
@@ -143,6 +156,15 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   const addBacktestEntry = (entry: Omit<BacktestEntry, 'id'>) => {
     const newId = `BT-${String(backtestEntries.length + 1).padStart(3, '0')}`;
     setBacktestEntries(prev => [{ ...entry, id: newId }, ...prev]);
+  };
+
+  const addBacktestEntryWithDetail = (
+    entry: Omit<BacktestEntry, 'id'>,
+    detail: Omit<BacktestDetailData, 'id'>,
+  ) => {
+    const newId = `BT-${String(backtestEntries.length + 1).padStart(3, '0')}`;
+    setBacktestEntries(prev => [{ ...entry, id: newId }, ...prev]);
+    setBacktestDetails(prev => [{ ...detail, id: newId }, ...prev]);
   };
 
   // --- Config ---
@@ -254,7 +276,7 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   return (
     <BacktestContext.Provider
       value={{
-        backtestEntries, addBacktestEntry,
+        backtestEntries, addBacktestEntry, addBacktestEntryWithDetail,
         backtestDetails, getBacktestDetail,
         config, updateConfig, resetConfig,
         addFilter, updateFilter, deleteFilter,
