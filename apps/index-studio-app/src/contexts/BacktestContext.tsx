@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
   Universe,
   FilterRule,
@@ -20,6 +20,8 @@ import {
   initialWeightingConfigurations,
   initialFormulaFields,
 } from '@/features/parameters-configuration/data';
+import { BacktestEntry, BacktestDetailData } from '@/features/backtest/types';
+import { initialBacktestEntries, initialBacktestDetails } from '@/features/backtest/data';
 
 export type {
   Universe,
@@ -36,6 +38,11 @@ export type {
 };
 
 interface BacktestContextType {
+  backtestEntries: BacktestEntry[];
+  addBacktestEntry: (entry: Omit<BacktestEntry, 'id'>) => void;
+  addBacktestEntryWithDetail: (entry: Omit<BacktestEntry, 'id'>, detail: Omit<BacktestDetailData, 'id'>) => void;
+  backtestDetails: BacktestDetailData[];
+  getBacktestDetail: (id: string) => BacktestDetailData | undefined;
   config: BacktestConfiguration;
   updateConfig: (updates: Partial<BacktestConfiguration>) => void;
   resetConfig: () => void;
@@ -112,12 +119,87 @@ const BacktestContext = createContext<BacktestContextType | undefined>(undefined
 
 export function BacktestProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<BacktestConfiguration>(defaultConfig);
-  const [universes, setUniverses] = useState<Universe[]>(initialUniverses);
-  const [filterSets, setFilterSets] = useState<FilterSet[]>(initialFilterSets);
+  const [backtestEntries, setBacktestEntries] = useState<BacktestEntry[]>(() => {
+    try {
+      const stored = localStorage.getItem('backtestEntries');
+      return stored ? (JSON.parse(stored) as BacktestEntry[]) : initialBacktestEntries;
+    } catch {
+      return initialBacktestEntries;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('backtestEntries', JSON.stringify(backtestEntries));
+  }, [backtestEntries]);
+  const [backtestDetails, setBacktestDetails] = useState<BacktestDetailData[]>(() => {
+    try {
+      const stored = localStorage.getItem('backtestDetails');
+      return stored ? (JSON.parse(stored) as BacktestDetailData[]) : initialBacktestDetails;
+    } catch {
+      return initialBacktestDetails;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('backtestDetails', JSON.stringify(backtestDetails));
+  }, [backtestDetails]);
+
+  const getBacktestDetail = (id: string) => backtestDetails.find(d => d.id === id);
+  const [universes, setUniverses] = useState<Universe[]>(() => {
+    try {
+      const stored = localStorage.getItem('universes');
+      return stored ? (JSON.parse(stored) as Universe[]) : initialUniverses;
+    } catch {
+      return initialUniverses;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem('universes', JSON.stringify(universes));
+  }, [universes]);
+
+  const [filterSets, setFilterSets] = useState<FilterSet[]>(() => {
+    try {
+      const stored = localStorage.getItem('filterSets');
+      return stored ? (JSON.parse(stored) as FilterSet[]) : initialFilterSets;
+    } catch {
+      return initialFilterSets;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem('filterSets', JSON.stringify(filterSets));
+  }, [filterSets]);
+
   const [rankingRules, setRankingRules] = useState<RankingRule[]>(initialRankingRules);
   const [weightingConfigurations, setWeightingConfigurations] = useState<WeightingConfiguration[]>(initialWeightingConfigurations);
-  const [universeConfigurations, setUniverseConfigurations] = useState<UniverseConfiguration[]>(initialUniverseConfigurations);
+
+  const [universeConfigurations, setUniverseConfigurations] = useState<UniverseConfiguration[]>(() => {
+    try {
+      const stored = localStorage.getItem('universeConfigurations');
+      return stored ? (JSON.parse(stored) as UniverseConfiguration[]) : initialUniverseConfigurations;
+    } catch {
+      return initialUniverseConfigurations;
+    }
+  });
+  useEffect(() => {
+    localStorage.setItem('universeConfigurations', JSON.stringify(universeConfigurations));
+  }, [universeConfigurations]);
+
   const [formulaFields, setFormulaFields] = useState<FormulaField[]>(initialFormulaFields);
+
+  // --- Backtest Entries ---
+  const addBacktestEntry = (entry: Omit<BacktestEntry, 'id'>) => {
+    const newId = `BT-${String(backtestEntries.length + 1).padStart(3, '0')}`;
+    setBacktestEntries(prev => [{ ...entry, id: newId }, ...prev]);
+  };
+
+  const addBacktestEntryWithDetail = (
+    entry: Omit<BacktestEntry, 'id'>,
+    detail: Omit<BacktestDetailData, 'id'>,
+  ) => {
+    const newId = `BT-${String(backtestEntries.length + 1).padStart(3, '0')}`;
+    setBacktestEntries(prev => [{ ...entry, id: newId }, ...prev]);
+    setBacktestDetails(prev => [{ ...detail, id: newId }, ...prev]);
+  };
 
   // --- Config ---
   const updateConfig = (updates: Partial<BacktestConfiguration>) =>
@@ -228,6 +310,8 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   return (
     <BacktestContext.Provider
       value={{
+        backtestEntries, addBacktestEntry, addBacktestEntryWithDetail,
+        backtestDetails, getBacktestDetail,
         config, updateConfig, resetConfig,
         addFilter, updateFilter, deleteFilter,
         addRankingFactor, updateRankingFactor, deleteRankingFactor,
