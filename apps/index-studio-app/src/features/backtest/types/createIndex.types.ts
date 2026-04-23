@@ -23,4 +23,6 @@ export interface CreateIndexFormState {
   selectedFilters: string;
   selectedRanking: string;
   selectedWeighting: string;
+  // File is not JSON-serializable; will be null after page refresh (re-upload required before API call)
+  uploadedFile: File | null;
 }

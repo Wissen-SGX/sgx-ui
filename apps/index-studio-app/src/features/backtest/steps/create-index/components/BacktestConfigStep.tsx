@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { Upload } from 'lucide-react';
 import { useBacktest } from '@/contexts/BacktestContext';
 import { CustomDropdown } from '@/components/CustomDropdown';
 import { CreateIndexFormState, ReturnTypes } from '@/features/backtest/types';
@@ -21,6 +23,7 @@ export function BacktestConfigStep({
   onCalendarToggle,
 }: BacktestConfigStepProps) {
   const { universes, filterSets, rankingRules, weightingConfigurations } = useBacktest();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const universeOptions = universes.map((u) => u.universeName);
   const filterOptions = filterSets.map((f) => f.name);
@@ -29,6 +32,14 @@ export function BacktestConfigStep({
 
   const showDecrementFields =
     formState.returnTypes.decrementPoints || formState.returnTypes.decrementPercent;
+
+  const isFixedBasket = formState.indexType === 'Fixed Basket';
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    onChange({ uploadedFile: file });
+    e.target.value = '';
+  };
 
   return (
     <div className="space-y-6">
@@ -62,14 +73,50 @@ export function BacktestConfigStep({
             onChange={(val) => {
               const updates: Partial<CreateIndexFormState> = { indexType: val };
               if (val === 'Fixed Basket') {
+                updates.selectedUniverse = '';
                 updates.selectedFilters = '';
                 updates.selectedRanking = '';
                 updates.selectedWeighting = '';
+              } else {
+                updates.uploadedFile = null;
               }
               onChange(updates);
             }}
             placeholder="Select index type"
           />
+          {isFixedBasket && (
+            <div className="flex items-center gap-3 mt-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm transition-colors hover:bg-blue-50"
+                style={{ borderColor: '#0094B3', color: '#0094B3' }}
+              >
+                <Upload size={14} />
+                Upload File
+              </button>
+              {formState.uploadedFile ? (
+                <span
+                  className="text-sm truncate max-w-45"
+                  style={{ color: '#374151' }}
+                  title={formState.uploadedFile.name}
+                >
+                  {formState.uploadedFile.name}
+                </span>
+              ) : (
+                <span className="text-xs" style={{ color: '#9CA3AF' }}>
+                  .csv, .xlsx, .xls
+                </span>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+          )}
         </div>
       </div>
 

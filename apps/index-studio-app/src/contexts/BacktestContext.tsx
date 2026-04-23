@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
   Universe,
   FilterRule,
@@ -20,8 +20,8 @@ import {
   initialWeightingConfigurations,
   initialFormulaFields,
 } from '@/features/parameters-configuration/data';
-import { BacktestEntry } from '@/features/backtest/types';
-import { initialBacktestEntries } from '@/features/backtest/data';
+import { BacktestEntry, BacktestDetailData } from '@/features/backtest/types';
+import { initialBacktestEntries, initialBacktestDetails } from '@/features/backtest/data';
 
 export type {
   Universe,
@@ -40,6 +40,8 @@ export type {
 interface BacktestContextType {
   backtestEntries: BacktestEntry[];
   addBacktestEntry: (entry: Omit<BacktestEntry, 'id'>) => void;
+  backtestDetails: BacktestDetailData[];
+  getBacktestDetail: (id: string) => BacktestDetailData | undefined;
   config: BacktestConfiguration;
   updateConfig: (updates: Partial<BacktestConfiguration>) => void;
   resetConfig: () => void;
@@ -116,7 +118,20 @@ const BacktestContext = createContext<BacktestContextType | undefined>(undefined
 
 export function BacktestProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<BacktestConfiguration>(defaultConfig);
-  const [backtestEntries, setBacktestEntries] = useState<BacktestEntry[]>(initialBacktestEntries);
+  const [backtestEntries, setBacktestEntries] = useState<BacktestEntry[]>(() => {
+    try {
+      const stored = localStorage.getItem('backtestEntries');
+      return stored ? (JSON.parse(stored) as BacktestEntry[]) : initialBacktestEntries;
+    } catch {
+      return initialBacktestEntries;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('backtestEntries', JSON.stringify(backtestEntries));
+  }, [backtestEntries]);
+  const [backtestDetails] = useState<BacktestDetailData[]>(initialBacktestDetails);
+  const getBacktestDetail = (id: string) => backtestDetails.find(d => d.id === id);
   const [universes, setUniverses] = useState<Universe[]>(initialUniverses);
   const [filterSets, setFilterSets] = useState<FilterSet[]>(initialFilterSets);
   const [rankingRules, setRankingRules] = useState<RankingRule[]>(initialRankingRules);
@@ -240,6 +255,7 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
     <BacktestContext.Provider
       value={{
         backtestEntries, addBacktestEntry,
+        backtestDetails, getBacktestDetail,
         config, updateConfig, resetConfig,
         addFilter, updateFilter, deleteFilter,
         addRankingFactor, updateRankingFactor, deleteRankingFactor,

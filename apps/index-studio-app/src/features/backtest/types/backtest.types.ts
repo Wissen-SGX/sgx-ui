@@ -26,3 +26,40 @@ export interface BacktestStatusCounts {
   launched: number;
   failed: number;
 }
+
+export interface BacktestDetailConfiguration {
+  indexType: string;
+  returnType: string;
+  rebalanceFrequency: string;
+  currency: string;
+  baseValue: string;
+  baseDate: string;
+  dividendTreatment: string;
+  weightCeiling: string;
+  weightingMethod: string;
+}
+
+export interface BacktestIndexLevel {
+  date: string;
+  value: string;
+  change: string;
+  positive: boolean;
+}
+
+export interface BacktestDetailData {
+  id: string;
+  totalReturn: string;
+  annualizedReturn: string;
+  volatility: string;
+  sharpeRatio: string;
+  maxDrawdown: string;
+  sortino: string;
+  calmar: string;
+  configuration: BacktestDetailConfiguration;
+  metadata: {
+    created: string;
+    completed: string | null;
+    lastUpdated: string;
+  };
+  indexLevels: BacktestIndexLevel[];
+}
