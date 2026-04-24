@@ -31,6 +31,8 @@ const DEFAULT_FORM: CreateIndexFormState = {
   selectedFilters: "",
   selectedRanking: "",
   selectedWeighting: "",
+  backtestStartDate: "2013-03-25",
+  backtestEndDate: "2025-12-11",
   uploadedFile: null,
 };
 

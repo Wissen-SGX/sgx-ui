@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, Calendar } from 'lucide-react';
 import { useBacktest } from '@/contexts/BacktestContext';
 import { CustomDropdown } from '@/components/CustomDropdown';
 import { CreateIndexFormState, ReturnTypes } from '@/features/backtest/types';
@@ -133,6 +133,54 @@ export function BacktestConfigStep({
           onChange={onChange}
         />
       )}
+
+      <div className="grid grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm mb-2" style={{ color: '#0B236B' }}>
+            Backtest Start Date <span style={{ color: '#EF4444' }}>*</span>
+          </label>
+          <div className="relative">
+            <Calendar
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: '#6B7280' }}
+            />
+            <input
+              type="date"
+              value={formState.backtestStartDate}
+              onChange={(e) => onChange({ backtestStartDate: e.target.value })}
+              className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0094B3]"
+              style={{ borderColor: '#D1D5DB', color: '#0B236B' }}
+            />
+          </div>
+          <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
+            Historical start date for backtesting — index base date
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-2" style={{ color: '#0B236B' }}>
+            Backtest End Date <span style={{ color: '#EF4444' }}>*</span>
+          </label>
+          <div className="relative">
+            <Calendar
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: '#6B7280' }}
+            />
+            <input
+              type="date"
+              value={formState.backtestEndDate}
+              onChange={(e) => onChange({ backtestEndDate: e.target.value })}
+              className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0094B3]"
+              style={{ borderColor: '#D1D5DB', color: '#0B236B' }}
+            />
+          </div>
+          <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
+            End date for backtest calculation (latest available date)
+          </p>
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-6">
         <div>
