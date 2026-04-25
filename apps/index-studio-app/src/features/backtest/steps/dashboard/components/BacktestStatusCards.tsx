@@ -5,7 +5,7 @@ interface BacktestStatusCardsProps {
   counts: BacktestStatusCounts;
 }
 
-export function BacktestStatusCards({ counts }: BacktestStatusCardsProps) {
+export default function BacktestStatusCards({ counts }: BacktestStatusCardsProps) {
   const cards = [
     { label: 'Total', value: counts.total, icon: <Edit size={16} className="text-gray-400" />, bg: 'white' },
     { label: 'Draft', value: counts.draft, icon: <FileText size={16} className="text-gray-400" />, bg: 'white' },

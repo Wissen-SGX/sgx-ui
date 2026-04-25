@@ -14,7 +14,7 @@ interface BacktestFiltersProps {
   onRefresh: () => void;
 }
 
-export function BacktestFilters({
+export default function BacktestFilters({
   searchQuery,
   onSearchChange,
   statusFilter,

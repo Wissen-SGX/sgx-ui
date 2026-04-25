@@ -50,7 +50,7 @@ const COLUMNS = ['Backtest Name', 'Type', 'Period', 'Status', 'Performance', 'Ac
 
 const STATUS_WITH_RUNNING_ACTION: BacktestStatus[] = ['Running'];
 
-export function BacktestTable({ entries, onRun, onStop }: BacktestTableProps) {
+export default function BacktestTable({ entries, onRun, onStop }: BacktestTableProps) {
   const navigate = useNavigate();
 
   return (
