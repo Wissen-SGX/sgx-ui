@@ -4,7 +4,7 @@ import { federation } from '@module-federation/vite';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
-  const isLocal = mode === 'development' || mode === 'local';
+  const isLocal = mode === 'development';
   const base = isLocal ? '/' : '/auth/';
 
   return {

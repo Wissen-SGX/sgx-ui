@@ -107,13 +107,13 @@ Vite loads env files at **build time only** — values are baked into the static
 
 **host-app** (per environment):
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `VITE_APP_ENV` | Environment label | `dev` |
-| `VITE_AUTH_APP_URL` | auth-app remoteEntry URL | `https://dev-sgx.example.com/auth/remoteEntry.js` |
-| `VITE_INDEX_STUDIO_APP_URL` | index-studio-app remoteEntry URL | `https://dev-sgx.example.com/index-studio/remoteEntry.js` |
+| Variable | Description | Value (all environments) |
+|----------|-------------|--------------------------|
+| `VITE_APP_ENV` | Environment label | `dev` / `uat` / `production` |
+| `VITE_AUTH_APP_URL` | auth-app remoteEntry URL | `/auth/remoteEntry.js` |
+| `VITE_INDEX_STUDIO_APP_URL` | index-studio-app remoteEntry URL | `/index-studio/remoteEntry.js` |
 
-> **Important:** For Docker/ECS deployments, `apps/host-app/.env.<env>` uses relative paths (`/auth/remoteEntry.js`, `/index-studio/remoteEntry.js`) because all microfrontends are served from the same nginx container/domain.
+> **Important:** All three environments (dev, uat, prod) use **relative paths** for federation remote URLs. Since all microfrontends are served from the same nginx container and domain, relative paths are correct everywhere — no cross-origin issues, and no URL to update when domains change. Do not use absolute URLs for these variables.
 
 ### 3.3 Before deploying — update API URLs
 
@@ -167,8 +167,8 @@ The Dockerfile uses a **two-stage build**:
 
 | Stage | Base image | Purpose |
 |-------|-----------|---------|
-| `builder` | `node:20-alpine` | Install dependencies, run Vite builds |
-| `production` | `nginx:1.25-alpine` | Serve static files |
+| `builder` | `artifactory-n.devops.sgx.com/docker-all/sgx/builder/node-22-a11:v5.2-1` | Install dependencies, run Vite builds |
+| `production` | `artifactory-n.devops.sgx.com/docker-all/nginx:1.29.4` | Serve static files |
 
 Build output layout inside the nginx container:
 
