@@ -16,7 +16,7 @@ export const buttonVariants = cva(
         warning: 'bg-sgx-yellow hover:bg-[#e6b800] text-white',
         lightblue: 'bg-sgx-light-blue hover:bg-[#006b88] text-white',
         ghost: 'bg-transparent border border-sgx-blue text-sgx-blue hover:bg-sgx-light-gray',
-        white: 'bg-white text-sgx-dark-gray hover:bg-gray-100 border border-gray-200',
+        white: 'bg-white border border-sgx-light-gray text-[#374151] hover:bg-gray-100 border border-gray-200',
         outline:
           'bg-transparent border border-sgx-light-blue text-sgx-light-blue ' +
           'hover:bg-sgx-light-blue/10',

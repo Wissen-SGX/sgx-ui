@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCw } from 'lucide-react';
+import { Plus, RotateCw } from 'lucide-react';
+import { Button } from '@sgx/ui';
 import { useBacktest } from '@/contexts/BacktestContext';
-import { BacktestStatusCards } from '@/features/backtest/steps/dashboard/components/BacktestStatusCards';
-import { BacktestFilters } from '@/features/backtest/steps/dashboard/components/BacktestFilters';
-import { BacktestTable } from '@/features/backtest/steps/dashboard/components/BacktestTable';
+const BacktestStatusCards = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestStatusCards'));
+const BacktestFilters = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestFilters'));
+const BacktestTable = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestTable'));
 import { BacktestStatusCounts } from '@/features/backtest/types';
 
 export default function BacktestDashboardPage() {
@@ -51,21 +52,22 @@ export default function BacktestDashboardPage() {
           <p className="text-sm text-gray-600 mt-1">Manage and monitor all your backtesting workflows</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            className="px-5 py-2.5 rounded-lg border flex items-center gap-2 text-sm hover:bg-gray-50 transition-colors"
-            style={{ borderColor: '#E5E7EB', color: '#374151' }}
+          <Button
+            variant={"white"}
+            className="px-5 py-2.5 rounded-lg border flex items-center gap-2 text-sm transition-colors"
             onClick={() => window.location.reload()}
           >
             <RotateCw size={18} />
             Refresh Data
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={"lightblue"}
             onClick={() => navigate('/backtest/create-index')}
-            className="px-5 py-2.5 rounded-lg flex items-center gap-2 text-white text-sm"
-            style={{ backgroundColor: '#0094B3' }}
+            className="px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm"
           >
-            + Create New Index
-          </button>
+            <Plus size={18} />
+            Create New Index
+          </Button>
         </div>
       </div>
 
