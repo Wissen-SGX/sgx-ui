@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
 import { StepIndicator } from "./StepIndicator";
 import { BacktestConfigStep } from "./BacktestConfigStep";
-import { BacktestParamsStep } from "./BacktestParamsStep";
+// import { BacktestParamsStep } from "./BacktestParamsStep"; // kept for future use
 import { ReviewLaunchStep } from "./ReviewLaunchStep";
 
 export const DEFAULT_FORM: CreateIndexFormState = {
@@ -35,6 +35,32 @@ export const DEFAULT_FORM: CreateIndexFormState = {
   uploadedFileName: null,
 };
 
+export type Step1Errors = Partial<Record<
+  'returnTypes' | 'backtestStartDate' | 'backtestEndDate' | 'baseCurrency' | 'baseValue',
+  string
+>>;
+
+function computeStep1Errors(formState: CreateIndexFormState): Step1Errors {
+  const errors: Step1Errors = {};
+  const rt = formState.returnTypes;
+  if (!rt.priceReturn && !rt.totalReturn && !rt.netTotalReturn && !rt.decrementPoints && !rt.decrementPercent) {
+    errors.returnTypes = "Please select at least one return type.";
+  }
+  if (!formState.backtestStartDate) {
+    errors.backtestStartDate = "Backtest start date is required.";
+  }
+  if (!formState.backtestEndDate) {
+    errors.backtestEndDate = "Backtest end date is required.";
+  }
+  if (!formState.baseCurrency) {
+    errors.baseCurrency = "Base currency is required.";
+  }
+  if (!formState.baseValue.trim()) {
+    errors.baseValue = "Base value is required.";
+  }
+  return errors;
+}
+
 interface IndexFormProps {
   initialFormState?: CreateIndexFormState;
   pageTitle: string;
@@ -54,6 +80,10 @@ export function IndexForm({
 }: IndexFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formState, setFormState] = useState<CreateIndexFormState>(initialFormState);
+  const [hasAttemptedProgress, setHasAttemptedProgress] = useState(false);
+
+  const step1Errors: Step1Errors = hasAttemptedProgress ? computeStep1Errors(formState) : {};
+  const hasStep1Errors = Object.keys(step1Errors).length > 0;
 
   const handleChange = (updates: Partial<CreateIndexFormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
@@ -87,13 +117,33 @@ export function IndexForm({
     }));
   };
 
-  const handleNext = () => { if (currentStep < 3) setCurrentStep((s) => s + 1); };
-  const handlePrevious = () => { if (currentStep > 1) setCurrentStep((s) => s - 1); };
+  // Step 2 (Backtest Parameters) is skipped — flow goes directly 1 → 3
+  const handleNext = () => {
+    if (currentStep === 1) {
+      setHasAttemptedProgress(true);
+      if (Object.keys(computeStep1Errors(formState)).length === 0) {
+        setCurrentStep(3);
+      }
+    }
+  };
 
-  const stepLabel =
-    currentStep === 1 ? "Backtest Configuration"
-    : currentStep === 2 ? "Backtest Parameters"
-    : "Review & Launch";
+  const handlePrevious = () => {
+    if (currentStep === 3) {
+      setCurrentStep(1);
+      setHasAttemptedProgress(false);
+    }
+  };
+
+  const handleSaveAsDraft = () => {
+    if (currentStep === 1) {
+      setHasAttemptedProgress(true);
+      if (Object.keys(computeStep1Errors(formState)).length > 0) return;
+    }
+    onSaveAsDraft(formState);
+  };
+
+  const displayStep = currentStep === 3 ? 2 : 1;
+  const stepLabel = currentStep === 1 ? "Backtest Configuration" : "Review & Launch";
 
   return (
     <div className="space-y-6">
@@ -107,12 +157,12 @@ export function IndexForm({
         <div>
           <h1>{pageTitle}</h1>
           <p className="text-sm text-gray-600 mt-1">
-            Step {currentStep} of 3: {stepLabel}
+            Step {displayStep} of 2: {stepLabel}
           </p>
         </div>
       </div>
 
-      <StepIndicator currentStep={currentStep} />
+      <StepIndicator currentStep={displayStep} />
 
       <div className="bg-white rounded-lg border p-6" style={{ borderColor: "#E5E7EB" }}>
         {currentStep === 1 && (
@@ -121,9 +171,11 @@ export function IndexForm({
             onChange={handleChange}
             onReturnTypeChange={handleReturnTypeChange}
             onCalendarToggle={handleCalendarToggle}
+            errors={step1Errors}
           />
         )}
-        {currentStep === 2 && <BacktestParamsStep />}
+        {/* Step 2 (Backtest Parameters) is temporarily disabled — component kept for future use */}
+        {/* {currentStep === 2 && <BacktestParamsStep />} */}
         {currentStep === 3 && <ReviewLaunchStep />}
       </div>
 
@@ -138,7 +190,7 @@ export function IndexForm({
         </button>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => onSaveAsDraft(formState)}
+            onClick={handleSaveAsDraft}
             className="px-5 py-2.5 rounded-lg border text-sm transition-colors"
             style={{ borderColor: "#E5E7EB", color: "#374151" }}
           >
@@ -148,7 +200,7 @@ export function IndexForm({
             <button
               onClick={handleNext}
               className="px-5 py-2.5 rounded-lg text-white text-sm flex items-center gap-2"
-              style={{ backgroundColor: "#0094B3" }}
+              style={{ backgroundColor: hasAttemptedProgress && hasStep1Errors ? "#9CA3AF" : "#0094B3" }}
             >
               Next
               <ChevronRight size={18} />

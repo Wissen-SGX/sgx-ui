@@ -8,7 +8,7 @@ export function CalendarSelector({ calendarOptions, selectedCalendars, onToggle 
   return (
     <div>
       <label className="block text-sm mb-2" style={{ color: '#0B236B' }}>
-        Calendar <span style={{ color: '#EF4444' }}>*</span>
+        Calendar
       </label>
       <div className="space-y-2">
         {calendarOptions.map((calendar) => (
