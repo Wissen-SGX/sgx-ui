@@ -7,8 +7,8 @@ import { getSidebarWidthClass } from '@layout/utils/layout.helpers';
 import { MENU_ITEMS } from '@layout/config/navigation';
 import { SimpleTooltip } from '@layout/utils/SimpleTooltip';
 
-import sgxLogo from '@layout/assets/sgxLogo.png';
-import sgxLogoCollapsed from '@layout/assets/sgxLogoCollapsed.png';
+import sgxLogo from '@sgx-assets/images/sgxLogo.png';
+import sgxLogoCollapsed from '@sgx-assets/images/sgxLogoCollapsed.png';
 
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const { pathname } = useLocation();
@@ -34,11 +34,11 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       <div className="p-6 flex items-center justify-between" style={{ height: '72px' }}>
         {!isCollapsed && (
           <div>
-            <img src={sgxLogo} alt="SGX Group" className="h-8" />
+            <img src={sgxLogo} alt="SGX Group" className="h-8" width={175} height={32} loading="lazy" decoding="async" />
             <div className="text-xs text-gray-400 mt-1">Index Management</div>
           </div>
         )}
-        {isCollapsed && <img src={sgxLogoCollapsed} alt="SGX Group" className="h-8 mx-auto" />}
+        {isCollapsed && <img src={sgxLogoCollapsed} alt="SGX Group" className="h-8 mx-auto" width={32} height={32} loading="lazy" decoding="async" />}
       </div>
 
       {/* Navigation */}
