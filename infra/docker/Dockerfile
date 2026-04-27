@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM artifactory-n.devops.sgx.com/docker-all/sgx/builder/node-22-a11:v5.2-1 AS builder
 
 WORKDIR /app
 
@@ -30,7 +30,7 @@ RUN npm --workspace apps/auth-app run build:${BUILD_ENV} && \
     npm --workspace apps/host-app run build:${BUILD_ENV}
 
 # Stage 2: Production server
-FROM nginx:1.25-alpine AS production
+FROM artifactory-n.devops.sgx.com/docker-all/nginx:1.29.4
 
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
@@ -41,7 +41,7 @@ COPY infra/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built static assets from builder
 COPY --from=builder /app/apps/host-app/dist /usr/share/nginx/html
 COPY --from=builder /app/apps/auth-app/dist /usr/share/nginx/html/auth
-COPY --from=builder /app/apps/index-studio-app/dist /usr/share/nginx/html/index-studio-app
+COPY --from=builder /app/apps/index-studio-app/dist /usr/share/nginx/html/index-studio
 
 EXPOSE 80
 

@@ -4,7 +4,7 @@ import { federation } from '@module-federation/vite';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode, command }) => {
-  const isLocalDev = mode === 'development' || mode === 'local';
+  const isLocalDev = mode === 'development';
   // 'vite build' with no --mode flag → mode='production' → start:local
   // 'vite build --mode dev-preview' → start:dev/uat/prod
   const isPreviewBuild = command === 'build' && (mode === 'production' || mode.endsWith('-preview'));
