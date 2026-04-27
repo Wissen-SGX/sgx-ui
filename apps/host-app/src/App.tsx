@@ -1,7 +1,8 @@
-import { Suspense, lazy, useState, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import { LoadingScreen } from "@sgx/ui";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@sgx/query-client";
+import { fetchCurrentUser } from "./api/auth.api";
 import "./index.css";
 
 const AuthApp = lazy(() =>
@@ -16,26 +17,26 @@ const MainApp = lazy(() =>
   })),
 );
 
-function usePathname() {
-  const [pathname, setPathname] = useState(() => window.location.pathname);
+function AppRouter() {
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: fetchCurrentUser,
+    retry: false,
+  });
 
-  useEffect(() => {
-    const handler = () => setPathname(window.location.pathname);
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
-  }, []);
+  if (isLoading) return <LoadingScreen isFading={false} />;
 
-  return pathname;
+  return (
+    <Suspense fallback={<LoadingScreen isFading={false} />}>
+      {user ? <MainApp /> : <AuthApp />}
+    </Suspense>
+  );
 }
 
 export default function App() {
-  const pathname = usePathname();
-
   return (
     <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<LoadingScreen isFading={false} />}>
-        {pathname.startsWith("/auth") ? <AuthApp /> : <MainApp />}
-      </Suspense>
+      <AppRouter />
     </QueryClientProvider>
   );
 }
