@@ -20,8 +20,10 @@ import {
   initialWeightingConfigurations,
   initialFormulaFields,
 } from '@/features/parameters-configuration/data';
-import { BacktestEntry, BacktestDetailData } from '@/features/backtest/types';
+import { BacktestEntry, BacktestDetailData, CreateIndexFormState } from '@/features/backtest/types';
 import { initialBacktestEntries, initialBacktestDetails } from '@/features/backtest/data';
+
+export type SerializableFormState = Omit<CreateIndexFormState, 'uploadedFile'>;
 
 export type {
   Universe,
@@ -40,9 +42,14 @@ export type {
 interface BacktestContextType {
   backtestEntries: BacktestEntry[];
   addBacktestEntry: (entry: Omit<BacktestEntry, 'id'>) => void;
-  addBacktestEntryWithDetail: (entry: Omit<BacktestEntry, 'id'>, detail: Omit<BacktestDetailData, 'id'>) => void;
+  addBacktestEntryWithDetail: (entry: Omit<BacktestEntry, 'id'>, detail: Omit<BacktestDetailData, 'id'>, formState?: SerializableFormState) => void;
+  updateBacktestEntry: (id: string, updates: Partial<Omit<BacktestEntry, 'id'>>) => void;
+  updateBacktestDetail: (id: string, updates: Partial<Omit<BacktestDetailData, 'id'>>) => void;
   backtestDetails: BacktestDetailData[];
   getBacktestDetail: (id: string) => BacktestDetailData | undefined;
+  backtestFormStates: Record<string, SerializableFormState>;
+  saveFormState: (id: string, state: SerializableFormState) => void;
+  getFormState: (id: string) => SerializableFormState | undefined;
   config: BacktestConfiguration;
   updateConfig: (updates: Partial<BacktestConfiguration>) => void;
   resetConfig: () => void;
@@ -145,6 +152,25 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   }, [backtestDetails]);
 
   const getBacktestDetail = (id: string) => backtestDetails.find(d => d.id === id);
+
+  const [backtestFormStates, setBacktestFormStates] = useState<Record<string, SerializableFormState>>(() => {
+    try {
+      const stored = localStorage.getItem('backtestFormStates');
+      return stored ? (JSON.parse(stored) as Record<string, SerializableFormState>) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('backtestFormStates', JSON.stringify(backtestFormStates));
+  }, [backtestFormStates]);
+
+  const saveFormState = (id: string, state: SerializableFormState) => {
+    setBacktestFormStates(prev => ({ ...prev, [id]: state }));
+  };
+
+  const getFormState = (id: string) => backtestFormStates[id];
   const [universes, setUniverses] = useState<Universe[]>(() => {
     try {
       const stored = localStorage.getItem('universes');
@@ -195,10 +221,22 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
   const addBacktestEntryWithDetail = (
     entry: Omit<BacktestEntry, 'id'>,
     detail: Omit<BacktestDetailData, 'id'>,
+    formState?: SerializableFormState,
   ) => {
     const newId = `BT-${String(backtestEntries.length + 1).padStart(3, '0')}`;
     setBacktestEntries(prev => [{ ...entry, id: newId }, ...prev]);
     setBacktestDetails(prev => [{ ...detail, id: newId }, ...prev]);
+    if (formState) {
+      setBacktestFormStates(prev => ({ ...prev, [newId]: formState }));
+    }
+  };
+
+  const updateBacktestEntry = (id: string, updates: Partial<Omit<BacktestEntry, 'id'>>) => {
+    setBacktestEntries(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+  };
+
+  const updateBacktestDetail = (id: string, updates: Partial<Omit<BacktestDetailData, 'id'>>) => {
+    setBacktestDetails(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
   };
 
   // --- Config ---
@@ -311,7 +349,9 @@ export function BacktestProvider({ children }: { children: ReactNode }) {
     <BacktestContext.Provider
       value={{
         backtestEntries, addBacktestEntry, addBacktestEntryWithDetail,
+        updateBacktestEntry, updateBacktestDetail,
         backtestDetails, getBacktestDetail,
+        backtestFormStates, saveFormState, getFormState,
         config, updateConfig, resetConfig,
         addFilter, updateFilter, deleteFilter,
         addRankingFactor, updateRankingFactor, deleteRankingFactor,

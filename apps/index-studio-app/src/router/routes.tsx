@@ -4,6 +4,7 @@ import { Navigate, RouteObject } from 'react-router-dom';
 const BacktestDashboardPage = lazy(() => import('@/features/backtest/steps/dashboard/BacktestDashboardPage'));
 const BacktestDetailPage = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestDetailPage'));
 const CreateIndexPage = lazy(() => import('@/features/backtest/steps/create-index/CreateIndexPage'));
+const EditBacktestPage = lazy(() => import('@/features/backtest/steps/create-index/components/EditBacktestPage'));
 
 const UniverseSelectionPage = lazy(() => import('@/features/parameters-configuration/steps/universe-selection/UniverseSelectionPage'));
 const FilteringPage = lazy(() => import('@/features/parameters-configuration/steps/filtering/FilteringPage'));
@@ -38,6 +39,10 @@ export const routes: RouteObject[] = [
       {
         path: 'backtest/dashboard/:id',
         element: <BacktestDetailPage />,
+      },
+      {
+        path: 'backtest/dashboard/:id/edit',
+        element: <EditBacktestPage />,
       },
       {
         path: 'parameters/universe',

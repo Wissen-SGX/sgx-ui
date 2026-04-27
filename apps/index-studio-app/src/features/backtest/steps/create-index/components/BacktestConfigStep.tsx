@@ -33,11 +33,12 @@ export function BacktestConfigStep({
   const showDecrementFields =
     formState.returnTypes.decrementPoints || formState.returnTypes.decrementPercent;
 
-  const isFixedBasket = formState.indexType === 'Fixed Basket';
+  const isFixedBasket = formState.indexType.includes('Fixed Basket');
+  const todayISO = new Date().toISOString().split('T')[0];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    onChange({ uploadedFile: file });
+    onChange({ uploadedFile: file, uploadedFileName: file?.name ?? null });
     e.target.value = '';
   };
 
@@ -72,13 +73,14 @@ export function BacktestConfigStep({
             value={formState.indexType}
             onChange={(val) => {
               const updates: Partial<CreateIndexFormState> = { indexType: val };
-              if (val === 'Fixed Basket') {
+              if (val.includes('Fixed Basket')) {
                 updates.selectedUniverse = '';
                 updates.selectedFilters = '';
                 updates.selectedRanking = '';
                 updates.selectedWeighting = '';
               } else {
                 updates.uploadedFile = null;
+                updates.uploadedFileName = null;
               }
               onChange(updates);
             }}
@@ -95,13 +97,13 @@ export function BacktestConfigStep({
                 <Upload size={14} />
                 Upload File
               </button>
-              {formState.uploadedFile ? (
+              {(formState.uploadedFile || formState.uploadedFileName) ? (
                 <span
                   className="text-sm truncate max-w-45"
                   style={{ color: '#374151' }}
-                  title={formState.uploadedFile.name}
+                  title={formState.uploadedFile?.name ?? formState.uploadedFileName ?? ''}
                 >
-                  {formState.uploadedFile.name}
+                  {formState.uploadedFile?.name ?? formState.uploadedFileName}
                 </span>
               ) : (
                 <span className="text-xs" style={{ color: '#9CA3AF' }}>
@@ -148,6 +150,7 @@ export function BacktestConfigStep({
             <input
               type="date"
               value={formState.backtestStartDate}
+              max={todayISO}
               onChange={(e) => onChange({ backtestStartDate: e.target.value })}
               className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0094B3]"
               style={{ borderColor: '#D1D5DB', color: '#0B236B' }}
@@ -171,6 +174,7 @@ export function BacktestConfigStep({
             <input
               type="date"
               value={formState.backtestEndDate}
+              max={todayISO}
               onChange={(e) => onChange({ backtestEndDate: e.target.value })}
               className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0094B3]"
               style={{ borderColor: '#D1D5DB', color: '#0B236B' }}
@@ -237,7 +241,7 @@ export function BacktestConfigStep({
         selectedFilters={formState.selectedFilters}
         selectedRanking={formState.selectedRanking}
         selectedWeighting={formState.selectedWeighting}
-        isFixedBasket={formState.indexType === 'Fixed Basket'}
+        isFixedBasket={formState.indexType.includes('Fixed Basket')}
         onChange={onChange}
       />
     </div>
