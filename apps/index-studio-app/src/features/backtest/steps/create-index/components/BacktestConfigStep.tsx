@@ -188,6 +188,7 @@ export function BacktestConfigStep({
             <input
               type="date"
               value={formState.backtestEndDate}
+              min={formState.backtestStartDate || undefined}
               max={todayISO}
               onChange={(e) => onChange({ backtestEndDate: e.target.value })}
               className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0094B3]"

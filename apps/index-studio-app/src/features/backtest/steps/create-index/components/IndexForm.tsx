@@ -51,6 +51,8 @@ function computeStep1Errors(formState: CreateIndexFormState): Step1Errors {
   }
   if (!formState.backtestEndDate) {
     errors.backtestEndDate = "Backtest end date is required.";
+  } else if (formState.backtestStartDate && formState.backtestEndDate < formState.backtestStartDate) {
+    errors.backtestEndDate = "End date must be on or after the start date.";
   }
   if (!formState.baseCurrency) {
     errors.baseCurrency = "Base currency is required.";
