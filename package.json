@@ -7,7 +7,9 @@
     "apps/host-app",
     "apps/index-studio-app",
     "packages/shared",
-    "packages/ui"
+    "packages/ui",
+    "packages/api-client",
+    "packages/query-client"
   ],
   "scripts": {
     "build": "npm run build:local",
@@ -48,6 +50,8 @@
   "dependencies": {
     "@module-federation/vite": "1.14.3",
     "@reduxjs/toolkit": "2.11.2",
+    "@tanstack/react-query": "^5.62.0",
+    "axios": "^1.7.9",
     "lucide-react": "^1.8.0",
     "react": "19.2.5",
     "react-dom": "19.2.5",

@@ -1,0 +1,19 @@
+{
+  "name": "@sgx/query-client",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  }
+}

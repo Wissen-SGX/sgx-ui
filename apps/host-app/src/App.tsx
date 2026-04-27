@@ -1,5 +1,7 @@
 import { Suspense, lazy, useState, useEffect } from "react";
 import { LoadingScreen } from "@sgx/ui";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@sgx/query-client";
 import "./index.css";
 
 const AuthApp = lazy(() =>
@@ -30,8 +32,10 @@ export default function App() {
   const pathname = usePathname();
 
   return (
-    <Suspense fallback={<LoadingScreen isFading={false} />}>
-      {pathname.startsWith("/auth") ? <AuthApp /> : <MainApp />}
-    </Suspense>
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={<LoadingScreen isFading={false} />}>
+        {pathname.startsWith("/auth") ? <AuthApp /> : <MainApp />}
+      </Suspense>
+    </QueryClientProvider>
   );
 }
