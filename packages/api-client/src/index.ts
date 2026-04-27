@@ -1,2 +1,2 @@
-export { default as apiClient } from './axios';
-export { get, post, put, del } from './methods';
+export { default as apiClient } from "./apiClient";
+export { get, post, put, del } from "./methods";
