@@ -44,6 +44,10 @@ export default function BacktestDashboardPage() {
     console.log('Stopping backtest:', id);
   };
 
+  const handleEdit = (id: string) => {
+    navigate(`/backtest/dashboard/${id}/edit`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -83,7 +87,7 @@ export default function BacktestDashboardPage() {
         onRefresh={() => window.location.reload()}
       />
 
-      <BacktestTable entries={filtered} onRun={handleRun} onStop={handleStop} />
+      <BacktestTable entries={filtered} onRun={handleRun} onStop={handleStop} onEdit={handleEdit} />
     </div>
   );
 }

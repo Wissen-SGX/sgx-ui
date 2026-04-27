@@ -5,7 +5,7 @@ interface StepIndicatorProps {
   currentStep: number;
 }
 
-const STEPS = ['Backtest Configuration', 'Backtest Parameters', 'Review & Launch'];
+const STEPS = ['Backtest Configuration', 'Review & Launch'];
 
 export function StepIndicator({ currentStep }: StepIndicatorProps) {
   return (

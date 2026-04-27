@@ -1,6 +1,6 @@
 export const INDEX_TYPE_OPTIONS = [
   'Standard Index',
-  'Fixed Basket',
+  'Fixed Basket (Equal Weighted)',
   'Single Stock',
   'Equal Weight Index',
   'IOI (Index of Index)',
