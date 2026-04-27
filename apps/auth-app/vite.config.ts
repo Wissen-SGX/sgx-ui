@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@theme': resolve(__dirname, '../../packages/ui/src/styles/theme.css'),
+        '@sgx-assets': resolve(__dirname, '../../packages/UI/assets'),
       },
     },
     plugins: [

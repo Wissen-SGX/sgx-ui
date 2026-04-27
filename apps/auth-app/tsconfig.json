@@ -19,6 +19,7 @@
     "baseUrl": ".",
     "paths": {
       "@theme": ["../packages/ui/src/styles/theme.css"],
+      "@sgx-assets/*": ["../../packages/UI/assets/*"]
     }
   },
   "include": ["src"]
