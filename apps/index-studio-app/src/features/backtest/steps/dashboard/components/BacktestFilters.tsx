@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, ChevronDown, RotateCw } from "lucide-react";
-import { STATUS_OPTIONS, TYPE_OPTIONS } from "@sgx/shared/constants";
+import { STATUS_OPTIONS, TYPE_OPTIONS } from "@sgx/shared";
 
 interface BacktestFiltersProps {
   searchQuery: string;

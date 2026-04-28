@@ -1,4 +1,4 @@
-import { JobStatus } from '@sgx/shared/constants';
+import { JobStatus } from '@sgx/shared';
 
 export type BacktestStatus = JobStatus;
 

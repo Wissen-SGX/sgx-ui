@@ -13,7 +13,7 @@ import {
   Edit2,
 } from "lucide-react";
 import { BacktestEntry, BacktestStatus } from "@/features/backtest/types";
-import { JobStatus, IndexType, STATUS_OPTIONS } from "@sgx/shared/constants";
+import { JobStatus, IndexType, STATUS_OPTIONS } from "@sgx/shared";
 
 interface BacktestTableProps {
   entries: BacktestEntry[];

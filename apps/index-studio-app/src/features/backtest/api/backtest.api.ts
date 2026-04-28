@@ -1,5 +1,5 @@
 import { get, post, put, del } from '@sgx/api-client';
-import { JobStatus, IndexType } from '@sgx/shared/constants';
+import { JobStatus, IndexType } from '@sgx/shared';
 import type { BacktestEntry, BacktestDetailData, BacktestStatus, BacktestStatusCounts } from '../types/backtest.types';
 import type { ReturnTypes, CreateIndexFormState } from '../types/createIndex.types';
 
@@ -150,10 +150,15 @@ export const saveAsDraft = (formState: CreateIndexFormState): Promise<BacktestEn
   };
 
   const formData = new FormData();
-  formData.append('request', new Blob([JSON.stringify(requestObj)], { type: 'application/json' }));
   if (formState.uploadedFile) {
     formData.append('file', formState.uploadedFile);
   }
+  formData.append('backtestName', requestObj.backtestName);
+  formData.append('indexType', requestObj.indexType);
+  formData.append('returnTypes', requestObj.returnTypes);
+  formData.append('baseValue', String(requestObj.baseValue));
+  formData.append('baseCurrency', requestObj.baseCurrency);
+  formData.append('calendars', requestObj.calendars);
 
   return post<BacktestEntry>('/backtest/draft', formData);
 };
