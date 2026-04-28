@@ -1,36 +1,28 @@
-import { useState, lazy } from 'react';
+import { lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, RotateCw } from 'lucide-react';
 import { Button } from '@sgx/ui';
-import { useBacktest } from '@/contexts/BacktestContext';
+import { useGetBacktests } from '@/features/backtest/hooks/useGetBacktests';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { setDashboardFilter } from '@/store/slices/backtestUiSlice';
 const BacktestStatusCards = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestStatusCards'));
 const BacktestFilters = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestFilters'));
 const BacktestTable = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestTable'));
-import { BacktestStatusCounts } from '@/features/backtest/types';
 
 export default function BacktestDashboardPage() {
   const navigate = useNavigate();
-  const { backtestEntries } = useBacktest();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All Statuses');
-  const [typeFilter, setTypeFilter] = useState('All Types');
+  const dispatch = useAppDispatch();
 
-  const counts: BacktestStatusCounts = {
-    total: backtestEntries.length,
-    draft: backtestEntries.filter((e) => e.status === 'Draft').length,
-    running: backtestEntries.filter((e) => e.status === 'Running').length,
-    completed: backtestEntries.filter((e) => e.status === 'Completed').length,
-    launched: backtestEntries.filter((e) => e.status === 'Launched to Production').length,
-    failed: backtestEntries.filter((e) => e.status === 'Failed').length,
-  };
+  const { data, isLoading, isError, refetch } = useGetBacktests();
+  const { searchQuery, statusFilter, typeFilter } = useAppSelector((s) => s.backtestUi.dashboard);
 
-  const filtered = backtestEntries.filter((entry) => {
+  const filtered = data.backtests.filter((entry) => {
     const matchesSearch =
       searchQuery === '' ||
       entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'All Statuses' || entry.status === statusFilter;
-    const matchesType = typeFilter === 'All Types' || entry.typeLabel === typeFilter;
+    const matchesStatus = statusFilter === 'all' || entry.status === statusFilter;
+    const matchesType = typeFilter === 'all' || entry.typeLabel === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -59,9 +51,10 @@ export default function BacktestDashboardPage() {
           <Button
             variant={"white"}
             className="px-5 py-2.5 rounded-lg border flex items-center gap-2 text-sm transition-colors"
-            onClick={() => window.location.reload()}
+            onClick={() => refetch()}
+            disabled={isLoading}
           >
-            <RotateCw size={18} />
+            <RotateCw size={18} className={isLoading ? 'animate-spin' : ''} />
             Refresh Data
           </Button>
           <Button
@@ -75,16 +68,20 @@ export default function BacktestDashboardPage() {
         </div>
       </div>
 
-      <BacktestStatusCards counts={counts} />
+      {isError && (
+        <p className="text-sm text-red-500">Failed to load backtests. Please try refreshing.</p>
+      )}
+
+      <BacktestStatusCards counts={data.stats} />
 
       <BacktestFilters
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={(val) => dispatch(setDashboardFilter({ searchQuery: val }))}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
+        onStatusChange={(val) => dispatch(setDashboardFilter({ statusFilter: val }))}
         typeFilter={typeFilter}
-        onTypeChange={setTypeFilter}
-        onRefresh={() => window.location.reload()}
+        onTypeChange={(val) => dispatch(setDashboardFilter({ typeFilter: val }))}
+        onRefresh={() => refetch()}
       />
 
       <BacktestTable entries={filtered} onRun={handleRun} onStop={handleStop} onEdit={handleEdit} />

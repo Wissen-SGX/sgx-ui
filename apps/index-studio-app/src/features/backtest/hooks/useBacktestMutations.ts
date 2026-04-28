@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createBacktest,
+  saveAsDraft,
   updateBacktest,
   deleteBacktest,
   runBacktest,
@@ -14,6 +15,16 @@ export function useCreateBacktest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateBacktestPayload) => createBacktest(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: backtestKeys.all });
+    },
+  });
+}
+
+export function useSaveAsDraft() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Partial<CreateBacktestPayload>) => saveAsDraft(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: backtestKeys.all });
     },
