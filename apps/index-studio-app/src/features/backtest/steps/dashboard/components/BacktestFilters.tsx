@@ -1,15 +1,6 @@
 import { useState } from "react";
 import { Search, ChevronDown, RotateCw } from "lucide-react";
-
-export const STATUS_OPTIONS = [
-  "All Statuses",
-  "Draft",
-  "Running",
-  "Completed",
-  "Launched to Production",
-  "Failed",
-];
-export const TYPE_OPTIONS = ["All Types", "Standard", "Fixed Basket"];
+import { STATUS_OPTIONS, TYPE_OPTIONS } from "@sgx/shared/constants";
 
 interface BacktestFiltersProps {
   searchQuery: string;
@@ -33,15 +24,20 @@ export default function BacktestFilters({
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
-  const handleStatusSelect = (option: string) => {
-    onStatusChange(option);
+  const handleStatusSelect = (value: string) => {
+    onStatusChange(value);
     setShowStatusDropdown(false);
   };
 
-  const handleTypeSelect = (option: string) => {
-    onTypeChange(option);
+  const handleTypeSelect = (value: string) => {
+    onTypeChange(value);
     setShowTypeDropdown(false);
   };
+
+  const currentStatusLabel =
+    STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "All Statuses";
+  const currentTypeLabel =
+    TYPE_OPTIONS.find((o) => o.value === typeFilter)?.label ?? "All Types";
 
   return (
     <div className="flex items-center gap-4">
@@ -70,7 +66,7 @@ export default function BacktestFilters({
               setShowTypeDropdown(false);
             }}
           >
-            {statusFilter}
+            {currentStatusLabel}
             <ChevronDown size={16} className="text-gray-400" />
           </button>
           {showStatusDropdown && (
@@ -78,13 +74,13 @@ export default function BacktestFilters({
               className="absolute z-10 mt-1 w-56 bg-white rounded-lg shadow-lg border"
               style={{ borderColor: "#E5E7EB" }}
             >
-              {STATUS_OPTIONS.map((option, i) => (
+              {STATUS_OPTIONS.map(({ label, value }, i, arr) => (
                 <div
-                  key={option}
-                  className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${i === 0 ? "rounded-t-lg" : ""} ${i === STATUS_OPTIONS.length - 1 ? "rounded-b-lg" : ""}`}
-                  onClick={() => handleStatusSelect(option)}
+                  key={value}
+                  className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${i === 0 ? "rounded-t-lg" : ""} ${i === arr.length - 1 ? "rounded-b-lg" : ""}`}
+                  onClick={() => handleStatusSelect(value)}
                 >
-                  {option}
+                  {label}
                 </div>
               ))}
             </div>
@@ -100,21 +96,21 @@ export default function BacktestFilters({
               setShowStatusDropdown(false);
             }}
           >
-            {typeFilter}
+            {currentTypeLabel}
             <ChevronDown size={16} className="text-gray-400" />
           </button>
           {showTypeDropdown && (
             <div
-              className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border"
+              className="absolute z-10 mt-1 w-56 bg-white rounded-lg shadow-lg border"
               style={{ borderColor: "#E5E7EB" }}
             >
-              {TYPE_OPTIONS.map((option, i) => (
+              {TYPE_OPTIONS.map(({ label, value }, i, arr) => (
                 <div
-                  key={option}
-                  className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${i === 0 ? "rounded-t-lg" : ""} ${i === TYPE_OPTIONS.length - 1 ? "rounded-b-lg" : ""}`}
-                  onClick={() => handleTypeSelect(option)}
+                  key={value}
+                  className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${i === 0 ? "rounded-t-lg" : ""} ${i === arr.length - 1 ? "rounded-b-lg" : ""}`}
+                  onClick={() => handleTypeSelect(value)}
                 >
-                  {option}
+                  {label}
                 </div>
               ))}
             </div>

@@ -12,7 +12,7 @@ export const backtestKeys = {
   metrics: (id: string) => ['backtests', id, 'detail'] as const,
 };
 
-const EMPTY: BacktestListResult = { stats: { total: 0, draft: 0, running: 0, completed: 0, launched: 0, failed: 0 }, backtests: [] };
+const EMPTY: BacktestListResult = { stats: { total: 0, draft: 0, running: 0, completed: 0, queued: 0, failed: 0 }, backtests: [] };
 
 export function useGetBacktests() {
   const query = useQuery({

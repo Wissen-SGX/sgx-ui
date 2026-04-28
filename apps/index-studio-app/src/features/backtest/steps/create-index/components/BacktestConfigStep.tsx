@@ -59,12 +59,16 @@ export function BacktestConfigStep({
             value={formState.backtestName}
             onChange={(e) => onChange({ backtestName: e.target.value })}
             className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0094B3]"
-            style={{ borderColor: '#D1D5DB', color: '#0B236B' }}
+            style={{ borderColor: errors?.backtestName ? '#EF4444' : '#D1D5DB', color: '#0B236B' }}
             placeholder="e.g., APAC ESG Leaders Q1 2026 Test Run"
           />
-          <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
-            Descriptive name for this backtest scenario
-          </p>
+          {errors?.backtestName ? (
+            <p className="text-xs mt-1" style={{ color: '#EF4444' }}>{errors.backtestName}</p>
+          ) : (
+            <p className="text-xs mt-1" style={{ color: '#6B7280' }}>
+              Descriptive name for this backtest scenario
+            </p>
+          )}
         </div>
 
         <div>

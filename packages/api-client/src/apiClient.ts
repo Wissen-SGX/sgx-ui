@@ -12,6 +12,16 @@ const apiClient = axios.create({
   },
   timeout: 30_000,
   //withCredentials: true,
+  transformRequest: [
+    (data: unknown, headers: Record<string, string> | undefined) => {
+      if (data instanceof FormData) {
+        // Let the browser set Content-Type with the multipart boundary
+        if (headers) delete headers["Content-Type"];
+        return data;
+      }
+      return data !== undefined && data !== null ? JSON.stringify(data) : data;
+    },
+  ],
 });
 
 apiClient.interceptors.request.use(

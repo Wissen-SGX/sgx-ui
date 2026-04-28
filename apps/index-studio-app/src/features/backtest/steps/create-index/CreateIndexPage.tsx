@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
 import { useBacktest } from "@/contexts/BacktestContext";
+import { useSaveAsDraft } from "@/features/backtest/hooks/useBacktestMutations";
 import { IndexForm, DEFAULT_FORM } from "./components/IndexForm";
 
 function formatISODate(isoDate: string): string {
@@ -65,26 +66,15 @@ function buildDetail(formState: CreateIndexFormState, createdDate: string) {
 export default function CreateIndexPage() {
   const navigate = useNavigate();
   const { addBacktestEntryWithDetail } = useBacktest();
+  const { mutate: saveAsDraft, isPending: isSavingDraft } = useSaveAsDraft();
 
   const today = () =>
     new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
   const handleSaveAsDraft = (formState: CreateIndexFormState) => {
-    const date = today();
-    const { uploadedFile, ...serializableFormState } = formState;
-    addBacktestEntryWithDetail(
-      {
-        ...buildEntry(formState),
-        status: "Draft",
-        statusColor: "#94A3B8",
-        statusBg: "#F1F5F9",
-        performance: "Backtest not running yet",
-        performanceValue: null,
-      },
-      buildDetail(formState, date),
-      serializableFormState,
-    );
-    navigate("/backtest/dashboard");
+    saveAsDraft(formState, {
+      onSuccess: () => navigate("/backtest/dashboard"),
+    });
   };
 
   const handleSubmit = (formState: CreateIndexFormState) => {
@@ -114,6 +104,7 @@ export default function CreateIndexPage() {
       onSaveAsDraft={handleSaveAsDraft}
       onSubmit={handleSubmit}
       onBack={() => navigate("/backtest/dashboard")}
+      isSavingDraft={isSavingDraft}
     />
   );
 }

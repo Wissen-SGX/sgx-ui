@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { CreateIndexFormState, ReturnTypes } from '@/features/backtest/types/createIndex.types';
-import { STATUS_OPTIONS, TYPE_OPTIONS } from '@/features/backtest/steps/dashboard/components/BacktestFilters';
 
 // File is non-serializable — kept in local component state only; slice holds the filename for display.
 type SerializableFormState = Omit<CreateIndexFormState, 'uploadedFile'>;
@@ -53,8 +52,8 @@ const initialState: BacktestUiState = {
   activeStep: 0,
   editingId: null,
   dashboard: {
-    statusFilter: STATUS_OPTIONS[0],
-    typeFilter: TYPE_OPTIONS[0],
+    statusFilter: 'ALL',
+    typeFilter: 'ALL',
     searchQuery: '',
   },
 };

@@ -1,12 +1,12 @@
-export type BacktestStatus = 'Draft' | 'Running' | 'Completed' | 'Launched to Production' | 'Failed';
+import { JobStatus } from '@sgx/shared/constants';
 
-export type BacktestIndexType = 'standard' | 'fixed basket';
+export type BacktestStatus = JobStatus;
 
 export interface BacktestEntry {
   id: string;
   name: string;
   description: string;
-  type: BacktestIndexType;
+  indexType: string;
   typeLabel: string;
   period: { start: string; end: string };
   status: BacktestStatus;
@@ -24,7 +24,7 @@ export interface BacktestStatusCounts {
   draft: number;
   running: number;
   completed: number;
-  launched: number;
+  queued: number;
   failed: number;
 }
 

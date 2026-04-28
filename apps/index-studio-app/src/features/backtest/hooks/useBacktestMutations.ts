@@ -9,6 +9,7 @@ import {
   type CreateBacktestPayload,
   type UpdateBacktestPayload,
 } from '../api/backtest.api';
+import type { CreateIndexFormState } from '../types/createIndex.types';
 import { backtestKeys } from './useGetBacktests';
 
 export function useCreateBacktest() {
@@ -24,7 +25,7 @@ export function useCreateBacktest() {
 export function useSaveAsDraft() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: Partial<CreateBacktestPayload>) => saveAsDraft(payload),
+    mutationFn: (formState: CreateIndexFormState) => saveAsDraft(formState),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: backtestKeys.all });
     },
