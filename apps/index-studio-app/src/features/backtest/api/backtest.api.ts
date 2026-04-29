@@ -183,8 +183,43 @@ export const saveAsDraft = (
   formData.append("baseValue", String(requestObj.baseValue));
   formData.append("baseCurrency", requestObj.baseCurrency);
   formData.append("calendars", requestObj.calendars);
+  if (formState.backtestStartDate) {
+    formData.append("backtestStartDate", formState.backtestStartDate);
+  }
+  if (formState.backtestEndDate) {
+    formData.append("backtestEndDate", formState.backtestEndDate);
+  }
+  if (formState.description) {
+    formData.append("description", formState.description);
+  }
 
   return post<BacktestEntry>("/backtest/draft", formData);
+};
+
+export const updateDraft = (
+  id: string,
+  formState: CreateIndexFormState,
+): Promise<BacktestDetailApiData> => {
+  const formData = new FormData();
+  if (formState.uploadedFile) {
+    formData.append("file", formState.uploadedFile);
+  }
+  formData.append("backtestName", formState.backtestName);
+  formData.append("indexType", INDEX_TYPE_MAP[formState.indexType] ?? formState.indexType);
+  formData.append("returnTypes", toReturnTypesCsv(formState.returnTypes));
+  formData.append("baseValue", String(Number(formState.baseValue)));
+  formData.append("baseCurrency", formState.baseCurrency);
+  formData.append("calendars", toCalendarsCsv(formState.selectedCalendars));
+  if (formState.backtestStartDate) {
+    formData.append("backtestStartDate", formState.backtestStartDate);
+  }
+  if (formState.backtestEndDate) {
+    formData.append("backtestEndDate", formState.backtestEndDate);
+  }
+  if (formState.description) {
+    formData.append("description", formState.description);
+  }
+  return put<BacktestDetailApiData>(`/backtest/${id}/draft`, formData);
 };
 
 export const updateBacktest = (

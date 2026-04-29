@@ -25,13 +25,13 @@ export default function BacktestDashboardPage() {
   const { searchQuery, statusFilter, typeFilter } = useAppSelector(
     (s) => s.backtestUi.dashboard,
   );
-  console.log("data", data);
   const filtered = data.backtests.filter((entry) => {
     const matchesSearch =
       searchQuery === "" ||
       entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || entry.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "ALL" || entry.status === statusFilter;
     const matchesType = typeFilter === "ALL" || entry.indexType === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });

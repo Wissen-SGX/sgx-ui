@@ -3,6 +3,15 @@ import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
 import { useBacktest } from "@/contexts/BacktestContext";
 import { useSaveAsDraft } from "@/features/backtest/hooks/useBacktestMutations";
 import { IndexForm, DEFAULT_FORM } from "./components/IndexForm";
+import { JobStatus, IndexType } from "@sgx/shared";
+
+const LABEL_TO_INDEX_TYPE: Record<string, string> = {
+  "Standard Index": IndexType.STANDARD_INDEX,
+  "Fixed Basket (Equal Weighted)": IndexType.FIXED_BASKET_EQUAL_WEIGHT,
+  "Fixed Basket (Equal Weight)": IndexType.FIXED_BASKET_EQUAL_WEIGHT,
+  "Fixed Basket (Free Float)": IndexType.FIXED_BASKET_FREE_FLOAT,
+  "Index of Indices": IndexType.INDEX_OF_INDICES,
+};
 
 function formatISODate(isoDate: string): string {
   if (!isoDate) return "--";
@@ -26,8 +35,8 @@ function buildEntry(formState: CreateIndexFormState) {
   return {
     name: formState.backtestName || "Untitled Index",
     description: formState.description || "",
-    type: (formState.indexType.includes("Fixed Basket") ? "fixed basket" : "standard") as "fixed basket" | "standard",
-    typeLabel: formState.indexType.includes("Fixed Basket") ? "Fixed Basket" : "Standard",
+    indexType: LABEL_TO_INDEX_TYPE[formState.indexType] ?? IndexType.STANDARD_INDEX,
+    typeLabel: formState.indexType,
     period: {
       start: formatISODate(formState.backtestStartDate),
       end: formatISODate(formState.backtestEndDate),
@@ -83,7 +92,7 @@ export default function CreateIndexPage() {
     addBacktestEntryWithDetail(
       {
         ...buildEntry(formState),
-        status: "Running",
+        status: JobStatus.RUNNING,
         statusColor: "#F59E0B",
         statusBg: "#FEF3C7",
         performance: "Awaiting Results",

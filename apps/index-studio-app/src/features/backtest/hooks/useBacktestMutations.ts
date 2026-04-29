@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createBacktest,
   saveAsDraft,
+  updateDraft,
   updateBacktest,
   deleteBacktest,
   runBacktest,
@@ -28,6 +29,18 @@ export function useSaveAsDraft() {
     mutationFn: (formState: CreateIndexFormState) => saveAsDraft(formState),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: backtestKeys.all });
+    },
+  });
+}
+
+export function useUpdateDraft() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, formState }: { id: string; formState: CreateIndexFormState }) =>
+      updateDraft(id, formState),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: backtestKeys.all });
+      queryClient.invalidateQueries({ queryKey: backtestKeys.detail(id) });
     },
   });
 }

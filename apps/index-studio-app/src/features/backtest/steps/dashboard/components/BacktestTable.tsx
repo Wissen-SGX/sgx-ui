@@ -12,7 +12,7 @@ import {
   MoreVertical,
   Edit2,
 } from "lucide-react";
-import { BacktestEntry, BacktestStatus } from "@/features/backtest/types";
+import { BacktestEntry } from "@/features/backtest/types";
 import { JobStatus, IndexType, STATUS_OPTIONS } from "@sgx/shared";
 
 interface BacktestTableProps {
@@ -86,7 +86,6 @@ const COLUMNS = [
   "Actions",
 ];
 
-const STATUS_WITH_RUNNING_ACTION: BacktestStatus[] = [JobStatus.RUNNING];
 
 export default function BacktestTable({
   entries,
@@ -224,7 +223,7 @@ export default function BacktestTable({
                     className="flex items-center gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {STATUS_WITH_RUNNING_ACTION.includes(entry.status) ? (
+                    {entry.status === JobStatus.RUNNING ? (
                       <button
                         onClick={(e) => onStop(entry.id, e)}
                         className="p-2 hover:bg-gray-100 rounded transition-colors"
@@ -232,7 +231,7 @@ export default function BacktestTable({
                       >
                         <Square size={16} style={{ color: "#DC2626" }} />
                       </button>
-                    ) : (
+                    ) : entry.status === JobStatus.DRAFT ? (
                       <button
                         onClick={(e) => onRun(entry.id, e)}
                         className="p-2 hover:bg-gray-100 rounded transition-colors"
@@ -240,7 +239,7 @@ export default function BacktestTable({
                       >
                         <Play size={16} style={{ color: "#0094B3" }} />
                       </button>
-                    )}
+                    ) : null}
                     <button
                       onClick={() =>
                         navigate(`/backtest/dashboard/${entry.id}`)
