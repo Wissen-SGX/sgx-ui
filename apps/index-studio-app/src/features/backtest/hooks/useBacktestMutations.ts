@@ -1,17 +1,30 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createBacktest,
   saveAsDraft,
   updateDraft,
   updateBacktest,
   deleteBacktest,
+  launchDraftBacktest,
   runBacktest,
-  launchBacktest,
   type CreateBacktestPayload,
   type UpdateBacktestPayload,
-} from '../api/backtest.api';
-import type { CreateIndexFormState } from '../types/createIndex.types';
-import { backtestKeys } from './useGetBacktests';
+  type LaunchBacktestResponse,
+} from "../api/backtest.api";
+import type { CreateIndexFormState } from "../types/createIndex.types";
+import { backtestKeys } from "./useGetBacktests";
+
+export type { LaunchBacktestResponse };
+
+export function useRunBacktest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (formState: CreateIndexFormState) => runBacktest(formState),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: backtestKeys.all });
+    },
+  });
+}
 
 export function useCreateBacktest() {
   const queryClient = useQueryClient();
@@ -36,8 +49,13 @@ export function useSaveAsDraft() {
 export function useUpdateDraft() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, formState }: { id: string; formState: CreateIndexFormState }) =>
-      updateDraft(id, formState),
+    mutationFn: ({
+      id,
+      formState,
+    }: {
+      id: string;
+      formState: CreateIndexFormState;
+    }) => updateDraft(id, formState),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: backtestKeys.all });
       queryClient.invalidateQueries({ queryKey: backtestKeys.detail(id) });
@@ -48,8 +66,13 @@ export function useUpdateDraft() {
 export function useUpdateBacktest() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateBacktestPayload }) =>
-      updateBacktest(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdateBacktestPayload;
+    }) => updateBacktest(id, payload),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: backtestKeys.all });
       queryClient.invalidateQueries({ queryKey: backtestKeys.detail(id) });
@@ -67,21 +90,10 @@ export function useDeleteBacktest() {
   });
 }
 
-export function useRunBacktest() {
+export function useLaunchDraftBacktest() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => runBacktest(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: backtestKeys.all });
-      queryClient.invalidateQueries({ queryKey: backtestKeys.detail(id) });
-    },
-  });
-}
-
-export function useLaunchBacktest() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => launchBacktest(id),
+    mutationFn: (id: string) => launchDraftBacktest(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: backtestKeys.all });
       queryClient.invalidateQueries({ queryKey: backtestKeys.detail(id) });

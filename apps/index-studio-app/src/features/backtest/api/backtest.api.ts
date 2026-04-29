@@ -159,7 +159,45 @@ export const fetchBacktestById = async (
 
 export const createBacktest = (
   payload: CreateBacktestPayload,
-): Promise<BacktestEntry> => post<BacktestEntry>("/backtests", payload);
+): Promise<BacktestEntry> => post<BacktestEntry>("/backtest/launch", payload);
+
+export const runBacktest = async (
+  formState: CreateIndexFormState,
+): Promise<LaunchBacktestResponse> => {
+  const formData = new FormData();
+  if (formState.uploadedFile) {
+    formData.append("file", formState.uploadedFile);
+  }
+  formData.append("backtestName", formState.backtestName);
+  formData.append("indexType", INDEX_TYPE_MAP[formState.indexType] ?? formState.indexType);
+  formData.append("returnTypes", toReturnTypesCsv(formState.returnTypes));
+  formData.append("baseValue", String(Number(formState.baseValue)));
+  formData.append("baseCurrency", formState.baseCurrency);
+  formData.append("calendars", toCalendarsCsv(formState.selectedCalendars));
+  if (formState.selectedUniverse) {
+    formData.append("universeId", formState.selectedUniverse);
+  }
+  if (formState.selectedFilters) {
+    formData.append("filterSetId", formState.selectedFilters);
+  }
+  if (formState.selectedRanking) {
+    formData.append("rankingSetId", formState.selectedRanking);
+  }
+  if (formState.selectedWeighting) {
+    formData.append("weightingSetId", formState.selectedWeighting);
+  }
+  if (formState.backtestStartDate) {
+    formData.append("backtestStartDate", formState.backtestStartDate);
+  }
+  if (formState.backtestEndDate) {
+    formData.append("backtestEndDate", formState.backtestEndDate);
+  }
+  if (formState.description) {
+    formData.append("description", formState.description);
+  }
+  const response = await post<LaunchBacktestApiResponse>("/backtest/launch", formData);
+  return response.data;
+};
 
 export const saveAsDraft = (
   formState: CreateIndexFormState,
@@ -205,7 +243,10 @@ export const updateDraft = (
     formData.append("file", formState.uploadedFile);
   }
   formData.append("backtestName", formState.backtestName);
-  formData.append("indexType", INDEX_TYPE_MAP[formState.indexType] ?? formState.indexType);
+  formData.append(
+    "indexType",
+    INDEX_TYPE_MAP[formState.indexType] ?? formState.indexType,
+  );
   formData.append("returnTypes", toReturnTypesCsv(formState.returnTypes));
   formData.append("baseValue", String(Number(formState.baseValue)));
   formData.append("baseCurrency", formState.baseCurrency);
@@ -225,13 +266,29 @@ export const updateDraft = (
 export const updateBacktest = (
   id: string,
   payload: UpdateBacktestPayload,
-): Promise<BacktestEntry> => put<BacktestEntry>(`/backtests/${id}`, payload);
+): Promise<BacktestEntry> => put<BacktestEntry>(`/backtest/${id}`, payload);
 
 export const deleteBacktest = (id: string): Promise<void> =>
-  del<void>(`/backtests/${id}`);
+  del<void>(`/backtest/${id}`);
 
-export const runBacktest = (id: string): Promise<BacktestEntry> =>
-  post<BacktestEntry>(`/backtests/${id}/run`);
+export interface LaunchBacktestResponse {
+  backtestJobId: number;
+  universeId: number;
+  status: string;
+  triggeredAt: string;
+}
 
-export const launchBacktest = (id: string): Promise<BacktestEntry> =>
-  post<BacktestEntry>(`/backtests/${id}/launch`);
+interface LaunchBacktestApiResponse {
+  success: boolean;
+  data: LaunchBacktestResponse;
+  message: string;
+}
+
+export const launchDraftBacktest = async (
+  id: string,
+): Promise<LaunchBacktestResponse> => {
+  const response = await post<LaunchBacktestApiResponse>(
+    `/backtest/${id}/launch`,
+  );
+  return response.data;
+};
