@@ -13,25 +13,39 @@ import {
   Table,
   RefreshCw,
   Share2,
-  CheckCircle,
   Rocket,
-  Paperclip,
+  CheckCircle,
+  Loader2,
 } from 'lucide-react';
-import { useBacktest } from '@/contexts/BacktestContext';
-import { BacktestDetailData, BacktestEntry, BacktestStatus } from '@/features/backtest/types';
+import { useGetBacktestById } from '@/features/backtest/hooks/useGetBacktests';
+import { TYPE_LABELS } from '@/features/backtest/api/backtest.api';
+import type { BacktestDetailApiData, BacktestResultItem } from '@/features/backtest/types';
+import { JobStatus } from '@sgx/shared';
+
+const STATUS_DISPLAY: Record<string, { label: string; bg: string; color: string }> = {
+  DRAFT:                    { label: 'Draft',              bg: '#F1F5F9', color: '#64748B' },
+  QUEUED:                   { label: 'Queued',             bg: '#F3F4F6', color: '#6B7280' },
+  RUNNING:                  { label: 'In Progress',        bg: '#FEF3C7', color: '#92400E' },
+  COMPLETED:                { label: 'Completed',          bg: '#DCFCE7', color: '#16A34A' },
+  FAILED:                   { label: 'Failed',             bg: '#FEE2E2', color: '#DC2626' },
+  'LAUNCHED TO PRODUCTION': { label: 'Live',               bg: '#DBEAFE', color: '#1E40AF' },
+};
 
 export default function BacktestDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('overview');
-  const { backtestEntries, getBacktestDetail } = useBacktest();
+  const { data, isLoading, isError } = useGetBacktestById(id ?? '');
 
-  const entry = backtestEntries.find((e) => e.id === id);
-  const detail = getBacktestDetail(id ?? '');
-  console.log('Backtest Entry:', entry);
-  console.log('Backtest Detail:', detail);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 size={28} className="animate-spin" style={{ color: '#0094B3' }} />
+      </div>
+    );
+  }
 
-  if (!entry) {
+  if (isError || !data) {
     return (
       <div className="flex flex-col items-center justify-center py-24 space-y-4">
         <p className="text-sm text-gray-500">Backtest not found.</p>
@@ -47,11 +61,13 @@ export default function BacktestDetailPage() {
     );
   }
 
+  const statusDisplay = STATUS_DISPLAY[data.status] ?? { label: data.status, bg: '#F3F4F6', color: '#6B7280' };
+
   const tabs = [
-    { key: 'overview', label: 'Overview', icon: Activity },
-    { key: 'parameters', label: 'Parameters', icon: FileText },
+    { key: 'overview',    label: 'Overview',     icon: Activity  },
+    { key: 'parameters',  label: 'Parameters',   icon: FileText  },
     { key: 'indexLevels', label: 'Index Levels', icon: TrendingUp },
-    { key: 'reports', label: 'Reports', icon: FileText },
+    { key: 'reports',     label: 'Reports',      icon: FileText  },
   ];
 
   return (
@@ -69,13 +85,13 @@ export default function BacktestDetailPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl" style={{ color: '#0B236B' }}>
-              {entry.name}
+              {data.backtestName}
             </h1>
-            <StatusBadge status={entry.status} />
+            <StatusBadge statusDisplay={statusDisplay} />
           </div>
-          <p className="text-sm text-gray-600 mt-1">{entry.description}</p>
+          <p className="text-sm text-gray-500 mt-1">ID: {data.id} · Created by {data.createdBy}</p>
         </div>
-        <StatusAction status={entry.status} />
+        <StatusAction status={data.status} />
       </div>
 
       {/* Metric Cards */}
@@ -83,41 +99,37 @@ export default function BacktestDetailPage() {
         <div className="border rounded-lg p-5 bg-white" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-2 mb-3">
             <Calendar size={18} style={{ color: '#0094B3' }} />
-            <div className="text-xs text-gray-600 uppercase">Period</div>
+            <div className="text-xs text-gray-600 uppercase">Created</div>
           </div>
           <div className="text-sm" style={{ color: '#0B236B' }}>
-            {entry.period.start} – {entry.period.end}
+            {new Date(data.createdDate).toLocaleDateString()}
           </div>
         </div>
 
         <div className="border rounded-lg p-5 bg-white" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp size={18} style={{ color: '#16A34A' }} />
-            <div className="text-xs text-gray-600 uppercase">Total Return</div>
+            <div className="text-xs text-gray-600 uppercase">Return Types</div>
           </div>
-          <div className="text-xl" style={{ color: detail?.totalReturn.startsWith('+') ? '#16A34A' : '#0B236B' }}>
-            {detail?.totalReturn ?? '--'}
-          </div>
+          <div className="text-sm" style={{ color: '#0B236B' }}>{data.returnTypes}</div>
         </div>
 
         <div className="border rounded-lg p-5 bg-white" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-2 mb-3">
             <Activity size={18} style={{ color: '#0094B3' }} />
-            <div className="text-xs text-gray-600 uppercase">Sharpe Ratio</div>
+            <div className="text-xs text-gray-600 uppercase">Base Value</div>
           </div>
           <div className="text-xl" style={{ color: '#0B236B' }}>
-            {detail?.sharpeRatio ?? '--'}
+            {data.baseValue.toLocaleString()} <span className="text-sm">{data.baseCurrency}</span>
           </div>
         </div>
 
         <div className="border rounded-lg p-5 bg-white" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-2 mb-3">
-            <TrendingDown size={18} style={{ color: '#DC2626' }} />
-            <div className="text-xs text-gray-600 uppercase">Max Drawdown</div>
+            <TrendingDown size={18} style={{ color: '#0094B3' }} />
+            <div className="text-xs text-gray-600 uppercase">Calendars</div>
           </div>
-          <div className="text-xl" style={{ color: '#DC2626' }}>
-            {detail?.maxDrawdown ?? '--'}
-          </div>
+          <div className="text-sm" style={{ color: '#0B236B' }}>{data.calendars}</div>
         </div>
       </div>
 
@@ -146,46 +158,52 @@ export default function BacktestDetailPage() {
         </div>
       </div>
 
-      {activeTab === 'overview' && <OverviewTab entry={entry} detail={detail} />}
-      {activeTab === 'parameters' && <ParametersTab detail={detail} />}
-      {activeTab === 'indexLevels' && <IndexLevelsTab indexLevels={detail?.indexLevels ?? []} />}
-      {activeTab === 'reports' && <ReportsTab />}
+      {activeTab === 'overview'    && <OverviewTab data={data} statusDisplay={statusDisplay} />}
+      {activeTab === 'parameters'  && <ParametersTab data={data} />}
+      {activeTab === 'indexLevels' && <IndexLevelsTab results={data.results} />}
+      {activeTab === 'reports'     && <ReportsTab results={data.results} />}
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: BacktestStatus }) {
-  const map: Record<BacktestStatus, { label: string; bg: string; color: string }> = {
-    'Launched to Production': { label: 'Live', bg: '#DBEAFE', color: '#1E40AF' },
-    Completed: { label: 'Completed', bg: '#DCFCE7', color: '#16A34A' },
-    Running: { label: 'In Progress', bg: '#FEF3C7', color: '#92400E' },
-    Draft: { label: 'Draft', bg: '#F1F5F9', color: '#64748B' },
-    Failed: { label: 'Failed', bg: '#FEE2E2', color: '#DC2626' },
-  };
-  const s = map[status];
+function StatusBadge({
+  statusDisplay,
+}: {
+  statusDisplay: { label: string; bg: string; color: string };
+}) {
   return (
     <span
       className="px-3 py-1 rounded text-xs"
-      style={{ backgroundColor: s.bg, color: s.color }}
+      style={{ backgroundColor: statusDisplay.bg, color: statusDisplay.color }}
     >
-      {s.label}
+      {statusDisplay.label}
     </span>
   );
 }
 
-function StatusAction({ status }: { status: BacktestStatus }) {
-  if (status === 'Launched to Production') {
+function StatusAction({ status }: { status: string }) {
+  if (status === JobStatus.QUEUED) {
     return (
       <button
         className="px-5 py-2.5 rounded-lg flex items-center gap-2 text-white text-sm"
         style={{ backgroundColor: '#16A34A' }}
       >
         <Rocket size={16} />
-        Launched to Production
+        Queued
       </button>
     );
   }
-  if (status === 'Completed') {
+  if (status === JobStatus.DRAFT) {
+    return (
+      <button
+        className="px-5 py-2.5 rounded-lg text-sm border"
+        style={{ borderColor: '#E5E7EB', color: '#94A3B8' }}
+      >
+        Draft
+      </button>
+    );
+  }
+  if (status === JobStatus.COMPLETED) {
     return (
       <button
         className="px-5 py-2.5 rounded-lg flex items-center gap-2 text-white text-sm"
@@ -196,7 +214,7 @@ function StatusAction({ status }: { status: BacktestStatus }) {
       </button>
     );
   }
-  if (status === 'Running') {
+  if (status === JobStatus.RUNNING) {
     return (
       <button
         className="px-5 py-2.5 rounded-lg flex items-center gap-2 text-white text-sm"
@@ -207,7 +225,7 @@ function StatusAction({ status }: { status: BacktestStatus }) {
       </button>
     );
   }
-  if (status === 'Failed') {
+  if (status === JobStatus.FAILED) {
     return (
       <button
         className="px-5 py-2.5 rounded-lg text-white text-sm"
@@ -228,221 +246,101 @@ function StatusAction({ status }: { status: BacktestStatus }) {
 }
 
 function OverviewTab({
-  entry,
-  detail,
+  data,
+  statusDisplay,
 }: {
-  entry: BacktestEntry;
-  detail: BacktestDetailData | undefined;
+  data: BacktestDetailApiData;
+  statusDisplay: { label: string; bg: string; color: string };
 }) {
-  const cfg = detail?.configuration;
-  const meta = detail?.metadata;
-
   return (
     <div className="space-y-6">
-      {entry.uploadedFileName && (
-        <div className="border rounded-lg p-5 bg-white flex items-center gap-3" style={{ borderColor: '#E5E7EB' }}>
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-            style={{ backgroundColor: '#E0F2FE' }}
-          >
-            <Paperclip size={18} style={{ color: '#0094B3' }} />
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Uploaded Basket File</div>
-            <div className="text-sm font-medium" style={{ color: '#0B236B' }}>{entry.uploadedFileName}</div>
-          </div>
-        </div>
-      )}
-
+      {/* Status + Dates */}
       <div className="grid grid-cols-2 gap-6">
         <div className="border rounded-lg p-6" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
           <div className="text-xs text-gray-600 uppercase mb-3">Status</div>
           <div
             className="px-3 py-1.5 rounded text-sm inline-block"
-            style={{ backgroundColor: entry.statusBg, color: entry.statusColor }}
+            style={{ backgroundColor: statusDisplay.bg, color: statusDisplay.color }}
           >
-            {entry.status}
+            {statusDisplay.label}
           </div>
         </div>
         <div className="border rounded-lg p-6" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
-          <div className="text-xs text-gray-600 uppercase mb-3">Backtest Period</div>
-          <div className="text-sm" style={{ color: '#0B236B' }}>
-            {entry.period.start} – {entry.period.end}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        <div className="border rounded-lg p-6" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
-          <div className="text-xs text-gray-600 uppercase mb-3">Total Return</div>
-          <div className="text-xl" style={{ color: detail?.totalReturn?.startsWith('+') ? '#16A34A' : '#0B236B' }}>
-            {detail?.totalReturn ?? '--'}
-          </div>
-        </div>
-        <div className="border rounded-lg p-6" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
-          <div className="text-xs text-gray-600 uppercase mb-3">Sharpe Ratio</div>
-          <div className="text-xl" style={{ color: '#0B236B' }}>
-            {detail?.sharpeRatio ?? '--'}
-          </div>
+          <div className="text-xs text-gray-600 uppercase mb-3">Created By</div>
+          <div className="text-sm" style={{ color: '#0B236B' }}>{data.createdBy}</div>
         </div>
       </div>
 
       {/* Configuration */}
-      {cfg && (
-        <div className="border rounded-lg bg-white" style={{ borderColor: '#E5E7EB' }}>
-          <div className="px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-            <div className="flex items-center gap-2 text-sm" style={{ color: '#0B236B' }}>
-              <FileText size={16} />
-              Configuration
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 gap-x-16 gap-y-4">
-              {[
-                ['Index Type', cfg.indexType],
-                ['Return Type', cfg.returnType],
-                ['Rebalance Frequency', cfg.rebalanceFrequency],
-                ['Currency', cfg.currency],
-                ['Base Value', cfg.baseValue],
-                ['Base Date', cfg.baseDate],
-                ['Dividend Treatment', cfg.dividendTreatment],
-                ['Weight Ceiling', cfg.weightCeiling],
-                ['Weighting Method', cfg.weightingMethod],
-              ].map(([label, value]) => (
-                <div key={label} className="flex justify-between items-center py-2">
-                  <span className="text-sm text-gray-600">{label}</span>
-                  <span className="text-sm" style={{ color: '#0B236B' }}>{value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Performance Metrics */}
-      {detail && (
-        <div className="border rounded-lg bg-white" style={{ borderColor: '#E5E7EB' }}>
-          <div className="px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-            <div className="flex items-center gap-2 text-sm" style={{ color: '#0B236B' }}>
-              <Activity size={16} />
-              Performance Metrics
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-4 gap-4">
-              {[
-                { label: 'Total Return', value: detail.totalReturn, color: detail.totalReturn.startsWith('+') ? '#16A34A' : '#0B236B' },
-                { label: 'Annualized Return', value: detail.annualizedReturn, color: detail.annualizedReturn.startsWith('+') ? '#16A34A' : '#0B236B' },
-                { label: 'Volatility', value: detail.volatility, color: '#0B236B' },
-                { label: 'Sharpe Ratio', value: detail.sharpeRatio, color: '#0B236B' },
-                { label: 'Max Drawdown', value: detail.maxDrawdown, color: detail.maxDrawdown.startsWith('-') ? '#DC2626' : '#0B236B' },
-                { label: 'Sortino', value: detail.sortino, color: '#0B236B' },
-                { label: 'Calmar', value: detail.calmar, color: '#0B236B' },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="border rounded-lg p-4 bg-white" style={{ borderColor: '#E5E7EB' }}>
-                  <div className="text-xs text-gray-500 mb-2">{label}</div>
-                  <div className="text-lg" style={{ color }}>{value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Backtesting Algorithm */}
       <div className="border rounded-lg bg-white" style={{ borderColor: '#E5E7EB' }}>
         <div className="px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm" style={{ color: '#0B236B' }}>
-              <FileText size={16} />
-              Backtesting Algorithm
-              <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: '#DBEAFE', color: '#1E40AF' }}>
-                Frozen
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="flex items-center gap-1 text-sm" style={{ color: '#0094B3' }}>
-                <FileText size={14} />
-                Previous Algorithm
-              </button>
-              <button className="flex items-center gap-1 text-sm" style={{ color: '#0094B3' }}>
-                <Download size={14} />
-                Download
-              </button>
-            </div>
+          <div className="flex items-center gap-2 text-sm" style={{ color: '#0B236B' }}>
+            <FileText size={16} />
+            Configuration
           </div>
         </div>
-        <div className="p-6 text-sm text-gray-500 text-center py-8">
-          📄 "selection_algorithm.py" uploaded
-          <div className="text-xs text-gray-400 mt-1">
-            Click "Previous Algorithm" to view or "Download" to save a copy
-          </div>
-        </div>
-      </div>
-
-      {/* Metadata */}
-      {meta && (
-        <div className="border rounded-lg bg-white" style={{ borderColor: '#E5E7EB' }}>
-          <div className="px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-            <div className="flex items-center gap-2 text-sm" style={{ color: '#0B236B' }}>
-              <FileText size={16} />
-              Metadata
-            </div>
-          </div>
-          <div className="p-6 space-y-3">
-            {[
-              ['Created', meta.created],
-              ['Completed', meta.completed ?? 'In Progress'],
-              ['Last Updated', meta.lastUpdated],
-            ].map(([label, value]) => (
-              <div key={label} className="flex justify-between items-center py-2">
+        <div className="p-6">
+          <div className="grid grid-cols-2 gap-x-16 gap-y-4">
+            {([
+              ['Index Type',    TYPE_LABELS[data.indexType] ?? data.indexType],
+              ['Return Types',  data.returnTypes],
+              ['Base Value',    String(data.baseValue)],
+              ['Base Currency', data.baseCurrency],
+              ['Calendars',     data.calendars],
+            ] as [string, string][]).map(([label, value]) => (
+              <div key={label} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid #F3F4F6' }}>
                 <span className="text-sm text-gray-600">{label}</span>
                 <span className="text-sm" style={{ color: '#0B236B' }}>{value}</span>
               </div>
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Error message if failed */}
+      {data.errorMessage && (
+        <div className="border rounded-lg p-5 bg-red-50" style={{ borderColor: '#FECACA' }}>
+          <div className="text-xs text-red-600 uppercase mb-1">Error</div>
+          <p className="text-sm text-red-700">{data.errorMessage}</p>
+        </div>
       )}
 
-      {/* Description */}
+      {/* Metadata */}
       <div className="border rounded-lg bg-white" style={{ borderColor: '#E5E7EB' }}>
         <div className="px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center gap-2 text-sm" style={{ color: '#0B236B' }}>
             <FileText size={16} />
-            Description
+            Metadata
           </div>
         </div>
-        <div className="p-6">
-          <p className="text-sm text-gray-700">{entry.description || 'No description provided.'}</p>
+        <div className="p-6 space-y-3">
+          {([
+            ['Created',      new Date(data.createdDate).toLocaleString()],
+            ['Last Updated', new Date(data.updatedDate).toLocaleString()],
+            ['Triggered By', data.triggeredBy ?? '—'],
+            ['Triggered At', data.triggeredAt ? new Date(data.triggeredAt).toLocaleString() : '—'],
+            ['Completed At', data.completedAt ? new Date(data.completedAt).toLocaleString() : '—'],
+          ] as [string, string][]).map(([label, value]) => (
+            <div key={label} className="flex justify-between items-center py-2" style={{ borderBottom: '1px solid #F3F4F6' }}>
+              <span className="text-sm text-gray-600">{label}</span>
+              <span className="text-sm" style={{ color: '#0B236B' }}>{value}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function ParametersTab({ detail }: { detail: BacktestDetailData | undefined }) {
-  const cfg = detail?.configuration;
-
-  if (!cfg) {
-    return (
-      <div className="border rounded-lg p-12 bg-white text-center text-sm text-gray-500" style={{ borderColor: '#E5E7EB' }}>
-        No parameter data available.
-      </div>
-    );
-  }
-
-  const left = [
-    ['Index Type', cfg.indexType],
-    ['Currency', cfg.currency],
-    ['Base Date', cfg.baseDate],
-    ['Rebalance Frequency', cfg.rebalanceFrequency],
-    ['Weight Ceiling', cfg.weightCeiling],
+function ParametersTab({ data }: { data: BacktestDetailApiData }) {
+  const left: [string, string][] = [
+    ['Index Type',    TYPE_LABELS[data.indexType] ?? data.indexType],
+    ['Base Currency', data.baseCurrency],
+    ['Base Value',    String(data.baseValue)],
   ];
-  const right = [
-    ['Return Type', cfg.returnType],
-    ['Base Value', cfg.baseValue],
-    ['Weighting Method', cfg.weightingMethod],
-    ['Dividend Treatment', cfg.dividendTreatment],
+  const right: [string, string][] = [
+    ['Return Types', data.returnTypes],
+    ['Calendars',    data.calendars],
   ];
 
   return (
@@ -479,12 +377,10 @@ function ParametersTab({ detail }: { detail: BacktestDetailData | undefined }) {
   );
 }
 
-function IndexLevelsTab({
-  indexLevels,
-}: {
-  indexLevels: BacktestDetailData['indexLevels'];
-}) {
-  if (indexLevels.length === 0) {
+function IndexLevelsTab({ results }: { results: BacktestResultItem[] }) {
+  const levelFiles = results.filter((r) => r.resultType === 'INDEX_LEVELS');
+
+  if (levelFiles.length === 0) {
     return (
       <div className="border rounded-lg p-12 bg-white text-center text-sm text-gray-500" style={{ borderColor: '#E5E7EB' }}>
         No index level data available yet.
@@ -495,12 +391,12 @@ function IndexLevelsTab({
   return (
     <div className="border rounded-lg bg-white overflow-hidden" style={{ borderColor: '#E5E7EB' }}>
       <div className="px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-        <div className="text-sm" style={{ color: '#0B236B' }}>Historical Index Levels</div>
+        <div className="text-sm" style={{ color: '#0B236B' }}>Index Level Files</div>
       </div>
       <table className="w-full">
         <thead>
           <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-            {['Date', 'Index Value', 'Daily Change'].map((col) => (
+            {['File Name', 'Result Type', 'Created', 'Download'].map((col) => (
               <th key={col} className="text-left px-6 py-3 text-xs text-gray-600 uppercase tracking-wider">
                 {col}
               </th>
@@ -508,18 +404,20 @@ function IndexLevelsTab({
           </tr>
         </thead>
         <tbody>
-          {indexLevels.map((item, index) => (
+          {levelFiles.map((item, index) => (
             <tr
-              key={index}
+              key={item.id}
               className="hover:bg-gray-50"
-              style={{ borderBottom: index < indexLevels.length - 1 ? '1px solid #E5E7EB' : 'none' }}
+              style={{ borderBottom: index < levelFiles.length - 1 ? '1px solid #E5E7EB' : 'none' }}
             >
-              <td className="px-6 py-4 text-sm" style={{ color: '#0B236B' }}>{item.date}</td>
-              <td className="px-6 py-4 text-sm" style={{ color: '#0094B3' }}>{item.value}</td>
+              <td className="px-6 py-4 text-sm" style={{ color: '#0B236B' }}>{item.fileName}</td>
+              <td className="px-6 py-4 text-sm text-gray-500">{item.resultType}</td>
+              <td className="px-6 py-4 text-sm text-gray-500">{new Date(item.createdDate).toLocaleDateString()}</td>
               <td className="px-6 py-4">
-                <span className="text-sm" style={{ color: item.positive ? '#16A34A' : '#DC2626' }}>
-                  {item.change}
-                </span>
+                <button className="flex items-center gap-1 text-sm" style={{ color: '#0094B3' }}>
+                  <Download size={14} />
+                  Download
+                </button>
               </td>
             </tr>
           ))}
@@ -529,33 +427,63 @@ function IndexLevelsTab({
   );
 }
 
-function ReportsTab() {
-  const reports = [
-    { id: 1, name: 'Performance Summary', icon: BarChart3 },
-    { id: 2, name: 'Index Levels (R-4)', icon: Table },
-    { id: 3, name: 'Daily Snapshot', icon: Table },
-    { id: 4, name: 'Rebalance Events', icon: RefreshCw },
-    { id: 5, name: 'Factsheet', icon: Share2 },
-    { id: 6, name: 'Index Composition', icon: FileText },
+function ReportsTab({ results }: { results: BacktestResultItem[] }) {
+  const staticReports = [
+    { id: 'performance', name: 'Performance Summary', icon: BarChart3 },
+    { id: 'daily',       name: 'Daily Snapshot',      icon: Table    },
+    { id: 'rebalance',   name: 'Rebalance Events',    icon: RefreshCw },
+    { id: 'factsheet',   name: 'Factsheet',           icon: Share2   },
+    { id: 'composition', name: 'Index Composition',   icon: FileText  },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      {reports.map(({ id, name, icon: Icon }) => (
-        <button
-          key={id}
-          className="border rounded-lg p-5 bg-white hover:bg-gray-50 transition-colors text-left flex items-center justify-between group"
-          style={{ borderColor: '#E5E7EB' }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#E0F2FE' }}>
-              <Icon size={20} style={{ color: '#0094B3' }} />
-            </div>
-            <span className="text-sm" style={{ color: '#0B236B' }}>{name}</span>
+    <div className="space-y-6">
+      {/* API result files */}
+      {results.length > 0 && (
+        <div className="border rounded-lg bg-white overflow-hidden" style={{ borderColor: '#E5E7EB' }}>
+          <div className="px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
+            <div className="text-sm" style={{ color: '#0B236B' }}>Result Files</div>
           </div>
-          <ChevronRight size={18} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
-        </button>
-      ))}
+          <div className="divide-y" style={{ borderColor: '#E5E7EB' }}>
+            {results.map((item) => (
+              <div key={item.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#E0F2FE' }}>
+                    <FileText size={18} style={{ color: '#0094B3' }} />
+                  </div>
+                  <div>
+                    <div className="text-sm" style={{ color: '#0B236B' }}>{item.fileName}</div>
+                    <div className="text-xs text-gray-400">{item.resultType}</div>
+                  </div>
+                </div>
+                <button className="flex items-center gap-1 text-sm" style={{ color: '#0094B3' }}>
+                  <Download size={14} />
+                  Download
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Static report types */}
+      <div className="grid grid-cols-2 gap-4">
+        {staticReports.map(({ id, name, icon: Icon }) => (
+          <button
+            key={id}
+            className="border rounded-lg p-5 bg-white hover:bg-gray-50 transition-colors text-left flex items-center justify-between group"
+            style={{ borderColor: '#E5E7EB' }}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#E0F2FE' }}>
+                <Icon size={20} style={{ color: '#0094B3' }} />
+              </div>
+              <span className="text-sm" style={{ color: '#0B236B' }}>{name}</span>
+            </div>
+            <ChevronRight size={18} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

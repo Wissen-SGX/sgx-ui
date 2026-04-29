@@ -64,3 +64,32 @@ export interface BacktestDetailData {
   };
   indexLevels: BacktestIndexLevel[];
 }
+
+export interface BacktestResultItem {
+  id: number;
+  resultType: string;
+  s3Path: string;
+  fileName: string;
+  createdDate: string;
+}
+
+export interface BacktestDetailApiData {
+  id: number;
+  backtestName: string;
+  indexType: string;
+  universeId?: number;
+  returnTypes: string;
+  baseValue: number;
+  baseCurrency: string;
+  calendars: string;
+  status: string;
+  triggeredBy?: string | null;
+  triggeredAt?: string | null;
+  completedAt?: string | null;
+  errorMessage?: string | null;
+  resultS3Key?: string | null;
+  createdBy: string;
+  createdDate: string;
+  updatedDate: string;
+  results: BacktestResultItem[];
+}

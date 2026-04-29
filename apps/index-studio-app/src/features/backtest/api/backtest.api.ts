@@ -1,6 +1,6 @@
 import { get, post, put, del } from '@sgx/api-client';
 import { JobStatus, IndexType } from '@sgx/shared';
-import type { BacktestEntry, BacktestDetailData, BacktestStatus, BacktestStatusCounts } from '../types/backtest.types';
+import type { BacktestEntry, BacktestDetailData, BacktestStatus, BacktestStatusCounts, BacktestDetailApiData } from '../types/backtest.types';
 import type { ReturnTypes, CreateIndexFormState } from '../types/createIndex.types';
 
 
@@ -41,7 +41,7 @@ const INDEX_TYPE_MAP: Record<string, string> = {
   'Index of Indices': IndexType.INDEX_OF_INDICES,
 };
 
-const TYPE_LABELS: Record<string, string> = {
+export const TYPE_LABELS: Record<string, string> = {
   [IndexType.STANDARD_INDEX]: 'Standard Index',
   [IndexType.FIXED_BASKET_EQUAL_WEIGHT]: 'Fixed Basket (Equal Weight)',
   [IndexType.FIXED_BASKET_FREE_FLOAT]: 'Fixed Basket (Free Float)',
@@ -130,11 +130,16 @@ export const fetchBacktests = async (): Promise<BacktestListResult> => {
   };
 };
 
-export const fetchBacktestById = (id: string): Promise<BacktestEntry> =>
-  get<BacktestEntry>(`/backtests/${id}`);
+interface BacktestDetailApiResponse {
+  success: boolean;
+  data: BacktestDetailApiData;
+  message?: string;
+}
 
-export const fetchBacktestDetail = (id: string): Promise<BacktestDetailData> =>
-  get<BacktestDetailData>(`/backtests/${id}/detail`);
+export const fetchBacktestById = async (id: string): Promise<BacktestDetailApiData> => {
+  const response = await get<BacktestDetailApiResponse>(`/backtest/${id}`);
+  return response.data;
+};
 
 export const createBacktest = (payload: CreateBacktestPayload): Promise<BacktestEntry> =>
   post<BacktestEntry>('/backtests', payload);
