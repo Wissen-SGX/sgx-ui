@@ -9,7 +9,7 @@ const authLoader = async () => {
 };
 
 const BacktestDashboardPage = lazy(() => import('@/features/backtest/steps/dashboard/BacktestDashboardPage'));
-const BacktestDetailPage = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestDetailPage'));
+const BacktestDetailPage = lazy(() => import('@/features/backtest/steps/backtest-detail/BacktestDetailPage'));
 const CreateIndexPage = lazy(() => import('@/features/backtest/steps/create-index/CreateIndexPage'));
 const EditBacktestPage = lazy(() => import('@/features/backtest/steps/create-index/components/EditBacktestPage'));
 
