@@ -1,4 +1,4 @@
-import { FileText } from 'lucide-react';
+import { FileText, Paperclip } from 'lucide-react';
 import { TYPE_LABELS } from '@/features/backtest/api/backtest.api';
 import type { BacktestDetailApiData } from '@/features/backtest/types';
 
@@ -11,6 +11,17 @@ export function OverviewTab({
 }) {
   return (
     <div className="space-y-6">
+      {/* Uploaded File */}
+      {data.csvFileName && (
+        <div className="border rounded-lg p-4 flex items-center gap-3" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
+          <Paperclip size={16} className="text-gray-400 shrink-0" />
+          <div>
+            <div className="text-xs text-gray-600 uppercase mb-0.5">Uploaded File</div>
+            <div className="text-sm" style={{ color: '#0B236B' }}>{data.csvFileName}</div>
+          </div>
+        </div>
+      )}
+
       {/* Status + Dates */}
       <div className="grid grid-cols-2 gap-6">
         <div className="border rounded-lg p-6" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>

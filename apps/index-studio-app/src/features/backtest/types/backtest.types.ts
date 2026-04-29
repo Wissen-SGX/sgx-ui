@@ -89,6 +89,7 @@ export interface BacktestDetailApiData {
   errorMessage?: string | null;
   resultS3Key?: string | null;
   uploadedFileName?: string | null;
+  csvFileName?: string | null;
   backtestStartDate?: string | null;
   backtestEndDate?: string | null;
   description?: string | null;

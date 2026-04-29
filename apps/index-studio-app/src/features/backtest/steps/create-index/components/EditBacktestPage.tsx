@@ -47,7 +47,7 @@ function apiDataToFormState(data: BacktestDetailApiData): CreateIndexFormState {
     backtestEndDate: data.backtestEndDate ?? DEFAULT_FORM.backtestEndDate,
     description: data.description ?? "",
     uploadedFile: null,
-    uploadedFileName: data.uploadedFileName ?? null,
+    uploadedFileName: data.csvFileName ?? data.uploadedFileName ?? null,
   };
 }
 
