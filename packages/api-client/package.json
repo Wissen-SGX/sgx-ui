@@ -1,14 +1,16 @@
 {
-  "name": "@sgx/shared",
+  "name": "@sgx/api-client",
   "version": "1.0.0",
   "type": "module",
   "main": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./constants": "./src/constants.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "format": "prettier --write src",
     "format:check": "prettier --check src"
+  },
+  "dependencies": {
+    "axios": "^1.7.9"
   }
 }

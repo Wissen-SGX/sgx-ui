@@ -1,119 +1,120 @@
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
-import { useBacktest } from "@/contexts/BacktestContext";
+import { CheckCircle2, AlertCircle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@sgx/ui";
+import { CreateIndexFormState } from "@/features/backtest/types";
+import { useSaveAsDraft, useRunBacktest } from "@/features/backtest/hooks/useBacktestMutations";
 import { IndexForm, DEFAULT_FORM } from "./components/IndexForm";
+import LaunchConfirmDialog from "../dashboard/components/LaunchConfirmDialog";
 
-function formatISODate(isoDate: string): string {
-  if (!isoDate) return "--";
-  const [y, m, d] = isoDate.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
-    day: "numeric", month: "short", year: "numeric",
-  });
+type AlertVariant = "success" | "destructive";
+
+interface AlertState {
+  variant: AlertVariant;
+  title: string;
+  description: string;
 }
 
-function getReturnTypeLabel(returnTypes: ReturnTypes): string {
-  const active: string[] = [];
-  if (returnTypes.priceReturn) active.push("Price Return");
-  if (returnTypes.totalReturn) active.push("Total Return");
-  if (returnTypes.netTotalReturn) active.push("Net Total Return");
-  if (returnTypes.decrementPoints) active.push("Decrement (Points)");
-  if (returnTypes.decrementPercent) active.push("Decrement (%)");
-  return active.join(", ") || "--";
-}
-
-function buildEntry(formState: CreateIndexFormState) {
-  return {
-    name: formState.backtestName || "Untitled Index",
-    description: formState.description || "",
-    type: (formState.indexType.includes("Fixed Basket") ? "fixed basket" : "standard") as "fixed basket" | "standard",
-    typeLabel: formState.indexType.includes("Fixed Basket") ? "Fixed Basket" : "Standard",
-    period: {
-      start: formatISODate(formState.backtestStartDate),
-      end: formatISODate(formState.backtestEndDate),
-    },
-    ...(formState.indexType.includes("Fixed Basket") && formState.uploadedFileName
-      ? { uploadedFileName: formState.uploadedFileName }
-      : {}),
-  };
-}
-
-function buildDetail(formState: CreateIndexFormState, createdDate: string) {
-  return {
-    totalReturn: "--",
-    annualizedReturn: "--",
-    volatility: "--",
-    sharpeRatio: "--",
-    maxDrawdown: "--",
-    sortino: "--",
-    calmar: "--",
-    configuration: {
-      indexType: formState.indexType,
-      returnType: getReturnTypeLabel(formState.returnTypes),
-      rebalanceFrequency: "--",
-      currency: formState.baseCurrency,
-      baseValue: formState.baseValue,
-      baseDate: formatISODate(formState.backtestStartDate),
-      dividendTreatment: "--",
-      weightCeiling: "--",
-      weightingMethod: formState.selectedWeighting || "--",
-    },
-    metadata: { created: createdDate, completed: null, lastUpdated: createdDate },
-    indexLevels: [] as { date: string; value: string; change: string; positive: boolean }[],
-  };
-}
+const ALERT_AUTO_DISMISS_MS = 5000;
 
 export default function CreateIndexPage() {
   const navigate = useNavigate();
-  const { addBacktestEntryWithDetail } = useBacktest();
+  const { mutate: saveAsDraft, isPending: isSavingDraft } = useSaveAsDraft();
+  const { mutate: runBacktest, isPending: isLaunching } = useRunBacktest();
 
-  const today = () =>
-    new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const [pendingFormState, setPendingFormState] = useState<CreateIndexFormState | null>(null);
+  const [alert, setAlert] = useState<AlertState | null>(null);
+  const navigateOnDismiss = useRef(false);
+
+  useEffect(() => {
+    if (!alert) return;
+    const timer = setTimeout(() => {
+      setAlert(null);
+      if (navigateOnDismiss.current) {
+        navigateOnDismiss.current = false;
+        navigate("/backtest/dashboard");
+      }
+    }, ALERT_AUTO_DISMISS_MS);
+    return () => clearTimeout(timer);
+  }, [alert, navigate]);
 
   const handleSaveAsDraft = (formState: CreateIndexFormState) => {
-    const date = today();
-    const { uploadedFile, ...serializableFormState } = formState;
-    addBacktestEntryWithDetail(
-      {
-        ...buildEntry(formState),
-        status: "Draft",
-        statusColor: "#94A3B8",
-        statusBg: "#F1F5F9",
-        performance: "Backtest not running yet",
-        performanceValue: null,
-      },
-      buildDetail(formState, date),
-      serializableFormState,
-    );
-    navigate("/backtest/dashboard");
+    saveAsDraft(formState, {
+      onSuccess: () => navigate("/backtest/dashboard"),
+    });
   };
 
   const handleSubmit = (formState: CreateIndexFormState) => {
-    const date = today();
-    const { uploadedFile, ...serializableFormState } = formState;
-    addBacktestEntryWithDetail(
-      {
-        ...buildEntry(formState),
-        status: "Running",
-        statusColor: "#F59E0B",
-        statusBg: "#FEF3C7",
-        performance: "Awaiting Results",
-        performanceValue: null,
-        icon: "loading",
+    setPendingFormState(formState);
+  };
+
+  const handleConfirmLaunch = () => {
+    if (!pendingFormState) return;
+    runBacktest(pendingFormState, {
+      onSuccess: () => {
+        setPendingFormState(null);
+        navigateOnDismiss.current = true;
+        setAlert({
+          variant: "success",
+          title: "Backtest Queued Successfully",
+          description: "Your backtest has been queued. Redirecting to dashboard…",
+        });
       },
-      buildDetail(formState, date),
-      serializableFormState,
-    );
-    navigate("/backtest/dashboard");
+      onError: (error: unknown) => {
+        setPendingFormState(null);
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        setAlert({
+          variant: "destructive",
+          title:
+            status === 400
+              ? "Validation Error"
+              : status === 404
+                ? "Universe Not Found"
+                : "Launch Failed",
+          description:
+            status === 400
+              ? "Validation failed, missing CSV, or universe is not ready."
+              : status === 404
+                ? "The universe could not be found. Please check your configuration."
+                : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+    });
   };
 
   return (
-    <IndexForm
-      initialFormState={DEFAULT_FORM}
-      pageTitle="Create Index"
-      submitLabel="Launch Backtest"
-      onSaveAsDraft={handleSaveAsDraft}
-      onSubmit={handleSubmit}
-      onBack={() => navigate("/backtest/dashboard")}
-    />
+    <div className="space-y-4">
+      {alert && (
+        <Alert variant={alert.variant}>
+          {alert.variant === "success" ? (
+            <CheckCircle2 className="h-4 w-4" />
+          ) : (
+            <AlertCircle className="h-4 w-4" />
+          )}
+          <AlertTitle>{alert.title}</AlertTitle>
+          <AlertDescription>{alert.description}</AlertDescription>
+        </Alert>
+      )}
+
+      <IndexForm
+        initialFormState={DEFAULT_FORM}
+        pageTitle="Create Index"
+        submitLabel="Launch Backtest"
+        onSaveAsDraft={handleSaveAsDraft}
+        onSubmit={handleSubmit}
+        onBack={() => navigate("/backtest/dashboard")}
+        isSavingDraft={isSavingDraft}
+      />
+
+      {pendingFormState && (
+        <LaunchConfirmDialog
+          backtestName={pendingFormState.backtestName || "this backtest"}
+          isLoading={isLaunching}
+          onConfirm={handleConfirmLaunch}
+          onCancel={() => setPendingFormState(null)}
+        />
+      )}
+    </div>
   );
 }

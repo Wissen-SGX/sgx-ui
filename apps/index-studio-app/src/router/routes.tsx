@@ -1,8 +1,15 @@
 import { lazy } from 'react';
-import { Navigate, RouteObject } from 'react-router-dom';
+import { Navigate, redirect, RouteObject } from 'react-router-dom';
+import { fetchCurrentUser } from '@/api/auth.api';
+
+const authLoader = async () => {
+  const user = await fetchCurrentUser();
+  if (!user) return redirect('/auth');
+  return null;
+};
 
 const BacktestDashboardPage = lazy(() => import('@/features/backtest/steps/dashboard/BacktestDashboardPage'));
-const BacktestDetailPage = lazy(() => import('@/features/backtest/steps/dashboard/components/BacktestDetailPage'));
+const BacktestDetailPage = lazy(() => import('@/features/backtest/steps/backtest-detail/BacktestDetailPage'));
 const CreateIndexPage = lazy(() => import('@/features/backtest/steps/create-index/CreateIndexPage'));
 const EditBacktestPage = lazy(() => import('@/features/backtest/steps/create-index/components/EditBacktestPage'));
 
@@ -22,6 +29,7 @@ const Layout = lazy(() => import('@layout/Layout'));
 export const routes: RouteObject[] = [
   {
     path: '/',
+    loader: authLoader,
     element: <Layout />,
     children: [
       {

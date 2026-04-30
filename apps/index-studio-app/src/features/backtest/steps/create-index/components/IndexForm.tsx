@@ -36,12 +36,15 @@ export const DEFAULT_FORM: CreateIndexFormState = {
 };
 
 export type Step1Errors = Partial<Record<
-  'returnTypes' | 'backtestStartDate' | 'backtestEndDate' | 'baseCurrency' | 'baseValue',
+  'backtestName' | 'returnTypes' | 'backtestStartDate' | 'backtestEndDate' | 'baseCurrency' | 'baseValue',
   string
 >>;
 
 function computeStep1Errors(formState: CreateIndexFormState): Step1Errors {
   const errors: Step1Errors = {};
+  if (!formState.backtestName.trim()) {
+    errors.backtestName = "Backtest name is required.";
+  }
   const rt = formState.returnTypes;
   if (!rt.priceReturn && !rt.totalReturn && !rt.netTotalReturn && !rt.decrementPoints && !rt.decrementPercent) {
     errors.returnTypes = "Please select at least one return type.";
@@ -70,6 +73,8 @@ interface IndexFormProps {
   onSaveAsDraft: (formState: CreateIndexFormState) => void;
   onSubmit: (formState: CreateIndexFormState) => void;
   onBack: () => void;
+  isSavingDraft?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function IndexForm({
@@ -79,6 +84,8 @@ export function IndexForm({
   onSaveAsDraft,
   onSubmit,
   onBack,
+  isSavingDraft = false,
+  isSubmitting = false,
 }: IndexFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formState, setFormState] = useState<CreateIndexFormState>(initialFormState);
@@ -193,10 +200,11 @@ export function IndexForm({
         <div className="flex items-center gap-3">
           <button
             onClick={handleSaveAsDraft}
-            className="px-5 py-2.5 rounded-lg border text-sm transition-colors"
+            disabled={isSavingDraft}
+            className="px-5 py-2.5 rounded-lg border text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ borderColor: "#E5E7EB", color: "#374151" }}
           >
-            Save as Draft
+            {isSavingDraft ? "Saving…" : "Save as Draft"}
           </button>
           {currentStep < 3 ? (
             <button
@@ -210,10 +218,11 @@ export function IndexForm({
           ) : (
             <button
               onClick={() => onSubmit(formState)}
-              className="px-5 py-2.5 rounded-lg text-white text-sm"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 rounded-lg text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#0094B3" }}
             >
-              {submitLabel}
+              {isSubmitting ? "Launching…" : submitLabel}
             </button>
           )}
         </div>

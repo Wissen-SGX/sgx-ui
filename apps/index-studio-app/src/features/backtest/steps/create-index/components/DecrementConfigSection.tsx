@@ -1,6 +1,6 @@
 import { CustomDropdown } from '@/components/CustomDropdown';
 import { CreateIndexFormState, ReturnTypes } from '@/features/backtest/types';
-import { DECREMENT_FREQUENCY_OPTIONS, DECREMENT_BASIS_OPTIONS } from '@/features/backtest/data';
+import { DECREMENT_FREQUENCY_OPTIONS, DECREMENT_BASIS_OPTIONS } from '@sgx/shared';
 
 interface DecrementConfigSectionProps {
   returnTypes: ReturnTypes;

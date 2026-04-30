@@ -1,4 +1,4 @@
-import { Edit, FileText, RefreshCw, CheckCircle, Rocket, XCircle } from 'lucide-react';
+import { Edit, FileText, RefreshCw, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { BacktestStatusCounts } from '@/features/backtest/types';
 
 interface BacktestStatusCardsProps {
@@ -11,7 +11,7 @@ export default function BacktestStatusCards({ counts }: BacktestStatusCardsProps
     { label: 'Draft', value: counts.draft, icon: <FileText size={16} className="text-gray-400" />, bg: 'white' },
     { label: 'Running', value: counts.running, icon: <RefreshCw size={16} style={{ color: '#F59E0B' }} />, bg: '#FFFBEB' },
     { label: 'Completed', value: counts.completed, icon: <CheckCircle size={16} style={{ color: '#16A34A' }} />, bg: '#F0FDF4' },
-    { label: 'Launched to Production', value: counts.launched, icon: <Rocket size={16} style={{ color: '#0094B3' }} />, bg: '#EFF6FF' },
+    { label: 'Queued', value: counts.queued, icon: <Clock size={16} style={{ color: '#0094B3' }} />, bg: '#EFF6FF' },
     { label: 'Failed', value: counts.failed, icon: <XCircle size={16} style={{ color: '#DC2626' }} />, bg: '#FEF2F2' },
   ];
 

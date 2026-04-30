@@ -12,7 +12,8 @@ import {
   MoreVertical,
   Edit2,
 } from "lucide-react";
-import { BacktestEntry, BacktestStatus } from "@/features/backtest/types";
+import { BacktestEntry } from "@/features/backtest/types";
+import { JobStatus, IndexType, STATUS_OPTIONS } from "@sgx/shared";
 
 interface BacktestTableProps {
   entries: BacktestEntry[];
@@ -22,6 +23,8 @@ interface BacktestTableProps {
 }
 
 function StatusBadge({ entry }: { entry: BacktestEntry }) {
+  const statusLabel =
+    STATUS_OPTIONS.find((o) => o.value === entry.status)?.label ?? entry.status;
   return (
     <div className="flex items-center gap-2">
       {entry.icon === "loading" && (
@@ -34,17 +37,17 @@ function StatusBadge({ entry }: { entry: BacktestEntry }) {
       {entry.icon === "error" && (
         <XCircle size={14} style={{ color: entry.statusColor }} />
       )}
-      {entry.status === "Completed" && !entry.icon && (
+      {entry.status === JobStatus.COMPLETED && !entry.icon && (
         <CheckCircle size={14} style={{ color: entry.statusColor }} />
       )}
-      {entry.status === "Launched to Production" && (
+      {(entry.status as string) === "LAUNCHED TO PRODUCTION" && (
         <Rocket size={14} style={{ color: entry.statusColor }} />
       )}
       <span
         className="px-3 py-1 rounded text-xs"
         style={{ backgroundColor: entry.statusBg, color: entry.statusColor }}
       >
-        {entry.status}
+        {statusLabel}
       </span>
     </div>
   );
@@ -83,7 +86,6 @@ const COLUMNS = [
   "Actions",
 ];
 
-const STATUS_WITH_RUNNING_ACTION: BacktestStatus[] = ["Running"];
 
 export default function BacktestTable({
   entries,
@@ -190,8 +192,13 @@ export default function BacktestTable({
                     className="px-3 py-1 rounded text-xs"
                     style={{
                       backgroundColor:
-                        entry.type === "standard" ? "#DBEAFE" : "#FEF3C7",
-                      color: entry.type === "standard" ? "#1E40AF" : "#92400E",
+                        entry.indexType === IndexType.STANDARD_INDEX
+                          ? "#DBEAFE"
+                          : "#FEF3C7",
+                      color:
+                        entry.indexType === IndexType.STANDARD_INDEX
+                          ? "#1E40AF"
+                          : "#92400E",
                     }}
                   >
                     {entry.typeLabel}
@@ -216,7 +223,7 @@ export default function BacktestTable({
                     className="flex items-center gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {STATUS_WITH_RUNNING_ACTION.includes(entry.status) ? (
+                    {entry.status === JobStatus.RUNNING ? (
                       <button
                         onClick={(e) => onStop(entry.id, e)}
                         className="p-2 hover:bg-gray-100 rounded transition-colors"
@@ -224,7 +231,7 @@ export default function BacktestTable({
                       >
                         <Square size={16} style={{ color: "#DC2626" }} />
                       </button>
-                    ) : (
+                    ) : entry.status === JobStatus.DRAFT ? (
                       <button
                         onClick={(e) => onRun(entry.id, e)}
                         className="p-2 hover:bg-gray-100 rounded transition-colors"
@@ -232,7 +239,7 @@ export default function BacktestTable({
                       >
                         <Play size={16} style={{ color: "#0094B3" }} />
                       </button>
-                    )}
+                    ) : null}
                     <button
                       onClick={() =>
                         navigate(`/backtest/dashboard/${entry.id}`)
@@ -263,7 +270,7 @@ export default function BacktestTable({
       {openMenuId !== null &&
         (() => {
           const openEntry = entries.find((e) => e.id === openMenuId);
-          const isDraft = openEntry?.status === "Draft";
+          const isDraft = openEntry?.status === JobStatus.DRAFT;
           return (
             <div
               ref={menuRef}

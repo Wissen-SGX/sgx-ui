@@ -1,12 +1,12 @@
-export type BacktestStatus = 'Draft' | 'Running' | 'Completed' | 'Launched to Production' | 'Failed';
+import { JobStatus } from "@sgx/shared";
 
-export type BacktestIndexType = 'standard' | 'fixed basket';
+export type BacktestStatus = JobStatus;
 
 export interface BacktestEntry {
   id: string;
   name: string;
   description: string;
-  type: BacktestIndexType;
+  indexType: string;
   typeLabel: string;
   period: { start: string; end: string };
   status: BacktestStatus;
@@ -14,8 +14,8 @@ export interface BacktestEntry {
   statusBg: string;
   performance: string;
   performanceValue: number | null;
-  trend?: 'up' | 'down';
-  icon?: 'loading' | 'error';
+  trend?: "up" | "down";
+  icon?: "loading" | "error";
   uploadedFileName?: string;
 }
 
@@ -24,20 +24,8 @@ export interface BacktestStatusCounts {
   draft: number;
   running: number;
   completed: number;
-  launched: number;
+  queued: number;
   failed: number;
-}
-
-export interface BacktestDetailConfiguration {
-  indexType: string;
-  returnType: string;
-  rebalanceFrequency: string;
-  currency: string;
-  baseValue: string;
-  baseDate: string;
-  dividendTreatment: string;
-  weightCeiling: string;
-  weightingMethod: string;
 }
 
 export interface BacktestIndexLevel {
@@ -47,20 +35,36 @@ export interface BacktestIndexLevel {
   positive: boolean;
 }
 
-export interface BacktestDetailData {
-  id: string;
-  totalReturn: string;
-  annualizedReturn: string;
-  volatility: string;
-  sharpeRatio: string;
-  maxDrawdown: string;
-  sortino: string;
-  calmar: string;
-  configuration: BacktestDetailConfiguration;
-  metadata: {
-    created: string;
-    completed: string | null;
-    lastUpdated: string;
-  };
-  indexLevels: BacktestIndexLevel[];
+export interface BacktestResultItem {
+  id: number;
+  resultType: string;
+  s3Path: string;
+  fileName: string;
+  createdDate: string;
+}
+
+export interface BacktestDetailApiData {
+  id: number;
+  backtestName: string;
+  indexType: string;
+  universeId?: number;
+  returnTypes: string;
+  baseValue: number;
+  baseCurrency: string;
+  calendars: string;
+  status: string;
+  triggeredBy?: string | null;
+  triggeredAt?: string | null;
+  completedAt?: string | null;
+  errorMessage?: string | null;
+  resultS3Key?: string | null;
+  uploadedFileName?: string | null;
+  csvFileName?: string | null;
+  backtestStartDate?: string | null;
+  backtestEndDate?: string | null;
+  description?: string | null;
+  createdBy: string;
+  createdDate: string;
+  updatedDate: string;
+  results: BacktestResultItem[];
 }

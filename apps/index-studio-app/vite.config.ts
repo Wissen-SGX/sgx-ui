@@ -54,6 +54,8 @@ export default defineConfig(({ mode, command }) => {
           'react-dom': { singleton: true },
           'react-router-dom': { singleton: true },
           '@reduxjs/toolkit': { singleton: true },
+          'react-redux': { singleton: true },
+          '@tanstack/react-query': { singleton: true },
         },
         dts: false,
       }),
