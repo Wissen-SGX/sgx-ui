@@ -20,8 +20,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@layout/*": ["src/components/Layout/*"],
-      "@theme": ["../packages/ui/src/styles/theme.css"],
-      "@sgx-assets/*": ["../../packages/ui/assets/*"]
+      "@theme": ["../packages/ui-components/src/styles/theme.css"],
+      "@sgx-assets/*": ["../../packages/ui-components/assets/*"]
     }
   },
   "include": ["src"]

@@ -9,7 +9,7 @@ COPY apps/auth-app/package.json ./apps/auth-app/
 COPY apps/host-app/package.json ./apps/host-app/
 COPY apps/index-studio-app/package.json ./apps/index-studio-app/
 COPY packages/shared/package.json ./packages/shared/
-COPY packages/ui/package.json ./packages/ui/
+COPY packages/ui-components/package.json ./packages/ui-components/
 
 # Install all dependencies
 RUN npm ci
@@ -23,7 +23,7 @@ COPY apps/host-app/ ./apps/host-app/
 # Build target environment: dev | uat | prod (default: prod)
 ARG BUILD_ENV=prod
 
-# Build micro-frontend remotes in parallel, then host (packages/shared and packages/ui
+# Build micro-frontend remotes in parallel, then host (packages/shared and packages/ui-components
 # are source-only — Vite bundles them inline, no separate build step needed)
 RUN npm --workspace apps/auth-app run build:${BUILD_ENV} && \
     npm --workspace apps/index-studio-app run build:${BUILD_ENV} && \
