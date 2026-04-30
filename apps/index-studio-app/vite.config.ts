@@ -42,7 +42,7 @@ export default defineConfig(({ mode, command }) => {
     resolve: {
       alias: {
         "@": resolve(__dirname, "./src"),
-        "@layout": resolve(__dirname, "./src/components/layout"),
+        "@layout": resolve(__dirname, "./src/components/Layout"),
         "@theme": resolve(
           __dirname,
           "../../packages/ui-components/src/styles/theme.css",
