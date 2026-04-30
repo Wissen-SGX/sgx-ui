@@ -7,7 +7,7 @@
     "apps/host-app",
     "apps/index-studio-app",
     "packages/shared",
-    "packages/ui",
+    "packages/ui-components",
     "packages/api-client",
     "packages/query-client"
   ],

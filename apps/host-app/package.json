@@ -29,7 +29,7 @@
     "@sgx/api-client": "file:../../packages/api-client",
     "@sgx/query-client": "file:../../packages/query-client",
     "@sgx/shared": "file:../../packages/shared",
-    "@sgx/ui": "file:../../packages/ui",
+    "@sgx/ui": "file:../../packages/ui-components",
     "@tanstack/react-query": "^5.62.0",
     "axios": "^1.7.9",
     "react": "19.2.5",
