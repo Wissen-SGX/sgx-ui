@@ -39,7 +39,7 @@ export default defineConfig(({ mode, command }) => {
         '@': resolve(__dirname, './src'),
         '@layout': resolve(__dirname, './src/components/layout'),
         '@theme': resolve(__dirname, '../../packages/ui/src/styles/theme.css'),
-        '@sgx-assets': resolve(__dirname, '../../packages/UI/assets'),
+        '@sgx-assets': resolve(__dirname, '../../packages/ui/assets'),
       },
     },
     plugins: [

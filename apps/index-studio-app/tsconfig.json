@@ -21,7 +21,7 @@
       "@/*": ["src/*"],
       "@layout/*": ["src/components/Layout/*"],
       "@theme": ["../packages/ui/src/styles/theme.css"],
-      "@sgx-assets/*": ["../../packages/UI/assets/*"]
+      "@sgx-assets/*": ["../../packages/ui/assets/*"]
     }
   },
   "include": ["src"]
