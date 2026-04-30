@@ -1,18 +1,20 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { federation } from "@module-federation/vite";
 import { resolve } from "path";
 
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
   const isLocal = mode === "development";
   const base = isLocal ? "/" : "/auth/";
+  const origin = env.VITE_SERVER_ORIGIN || "http://localhost:3001";
 
   return {
     base,
     server: {
       host: "0.0.0.0",
       port: 3001,
-      origin: "http://localhost:3001",
+      origin,
     },
     preview: {
       port: 4001,

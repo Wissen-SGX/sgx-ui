@@ -4,6 +4,7 @@ import { federation } from "@module-federation/vite";
 import { resolve } from "path";
 
 export default defineConfig(({ mode, command }) => {
+  const env = loadEnv(mode, process.cwd(), "");
   const isLocalDev = mode === "development";
   // 'vite build' with no --mode flag → mode='production' → start:local
   // 'vite build --mode dev-preview' → start:dev/uat/prod
@@ -34,7 +35,7 @@ export default defineConfig(({ mode, command }) => {
     server: {
       host: "0.0.0.0",
       port: 3002,
-      origin: "http://localhost:3002",
+      origin: env.VITE_SERVER_ORIGIN || "http://localhost:3002",
     },
     preview: {
       port: 4002,

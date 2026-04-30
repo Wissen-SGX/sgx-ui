@@ -8,15 +8,16 @@ export default defineConfig(({ mode, command }) => {
   // serve = vite dev server (dev:all), build = any vite build
   // For builds without an env-file override (i.e. local/preview builds), default to preview ports.
   // Docker builds supply VITE_AUTH_APP_URL / VITE_INDEX_STUDIO_APP_URL via their .env.dev/uat/prod files.
+  const devHost = env.VITE_DEV_HOST || "localhost";
   const authUrl =
     env.VITE_AUTH_APP_URL ||
     (command === "serve"
-      ? "http://localhost:3001/remoteEntry.js"
+      ? `http://${devHost}:3001/remoteEntry.js`
       : "http://localhost:4001/auth/remoteEntry.js");
   const indexStudioUrl =
     env.VITE_INDEX_STUDIO_APP_URL ||
     (command === "serve"
-      ? "http://localhost:3002/remoteEntry.js"
+      ? `http://${devHost}:3002/remoteEntry.js`
       : "http://localhost:4002/index-studio/remoteEntry.js");
 
   return {
