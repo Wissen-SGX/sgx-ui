@@ -27,6 +27,7 @@ export default defineConfig(({ mode, command }) => {
     base,
     define,
     server: {
+      host: '0.0.0.0',
       port: 3002,
       origin: 'http://localhost:3002',
     },

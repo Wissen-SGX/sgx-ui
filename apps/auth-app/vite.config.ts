@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     server: {
+      host: '0.0.0.0',
       port: 3001,
       origin: 'http://localhost:3001',
     },
