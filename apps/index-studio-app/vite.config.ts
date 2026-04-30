@@ -36,6 +36,7 @@ export default defineConfig(({ mode, command }) => {
       host: "0.0.0.0",
       port: 3002,
       origin: env.VITE_SERVER_ORIGIN || "http://localhost:3002",
+      cors: true,
     },
     preview: {
       port: 4002,
