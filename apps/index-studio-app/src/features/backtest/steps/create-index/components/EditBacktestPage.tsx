@@ -6,7 +6,7 @@ import { JobStatus, STATUS_OPTIONS } from "@sgx/shared";
 import { useGetBacktestById } from "@/features/backtest/hooks/useGetBacktests";
 import { useUpdateDraft } from "@/features/backtest/hooks/useBacktestMutations";
 import { TYPE_LABELS } from "@/features/backtest/api/backtest.api";
-import { CALENDAR_OPTIONS } from "@/features/backtest/data";
+import { CALENDAR_OPTIONS } from "@sgx/shared";
 import type { BacktestDetailApiData } from "@/features/backtest/types/backtest.types";
 
 // Convert API returnTypes CSV ("PR,TR") → ReturnTypes object

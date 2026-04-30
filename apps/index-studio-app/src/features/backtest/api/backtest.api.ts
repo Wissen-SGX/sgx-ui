@@ -156,10 +156,6 @@ export const fetchBacktestById = async (
   return response.data;
 };
 
-export const createBacktest = (
-  payload: CreateBacktestPayload,
-): Promise<BacktestEntry> => post<BacktestEntry>("/backtest/launch", payload);
-
 export const runBacktest = async (
   formState: CreateIndexFormState,
 ): Promise<LaunchBacktestResponse> => {
