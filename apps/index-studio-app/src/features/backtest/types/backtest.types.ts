@@ -1,4 +1,4 @@
-import { JobStatus } from '@sgx/shared';
+import { JobStatus } from "@sgx/shared";
 
 export type BacktestStatus = JobStatus;
 
@@ -14,8 +14,8 @@ export interface BacktestEntry {
   statusBg: string;
   performance: string;
   performanceValue: number | null;
-  trend?: 'up' | 'down';
-  icon?: 'loading' | 'error';
+  trend?: "up" | "down";
+  icon?: "loading" | "error";
   uploadedFileName?: string;
 }
 
@@ -28,41 +28,11 @@ export interface BacktestStatusCounts {
   failed: number;
 }
 
-export interface BacktestDetailConfiguration {
-  indexType: string;
-  returnType: string;
-  rebalanceFrequency: string;
-  currency: string;
-  baseValue: string;
-  baseDate: string;
-  dividendTreatment: string;
-  weightCeiling: string;
-  weightingMethod: string;
-}
-
 export interface BacktestIndexLevel {
   date: string;
   value: string;
   change: string;
   positive: boolean;
-}
-
-export interface BacktestDetailData {
-  id: string;
-  totalReturn: string;
-  annualizedReturn: string;
-  volatility: string;
-  sharpeRatio: string;
-  maxDrawdown: string;
-  sortino: string;
-  calmar: string;
-  configuration: BacktestDetailConfiguration;
-  metadata: {
-    created: string;
-    completed: string | null;
-    lastUpdated: string;
-  };
-  indexLevels: BacktestIndexLevel[];
 }
 
 export interface BacktestResultItem {

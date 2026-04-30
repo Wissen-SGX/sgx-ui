@@ -8,7 +8,7 @@ import { JobStatus, STATUS_OPTIONS } from "@sgx/shared";
 import { useGetBacktestById } from "@/features/backtest/hooks/useGetBacktests";
 import { useUpdateDraft, useLaunchDraftBacktest } from "@/features/backtest/hooks/useBacktestMutations";
 import { TYPE_LABELS } from "@/features/backtest/api/backtest.api";
-import { CALENDAR_OPTIONS } from "@/features/backtest/data";
+import { CALENDAR_OPTIONS } from "@sgx/shared";
 import type { BacktestDetailApiData } from "@/features/backtest/types/backtest.types";
 import LaunchConfirmDialog from "@/features/backtest/steps/dashboard/components/LaunchConfirmDialog";
 

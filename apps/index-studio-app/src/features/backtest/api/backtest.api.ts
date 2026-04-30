@@ -2,7 +2,6 @@ import { get, post, put, del } from "@sgx/api-client";
 import { JobStatus, IndexType } from "@sgx/shared";
 import type {
   BacktestEntry,
-  BacktestDetailData,
   BacktestStatus,
   BacktestStatusCounts,
   BacktestDetailApiData,
@@ -157,10 +156,6 @@ export const fetchBacktestById = async (
   return response.data;
 };
 
-export const createBacktest = (
-  payload: CreateBacktestPayload,
-): Promise<BacktestEntry> => post<BacktestEntry>("/backtest/launch", payload);
-
 export const runBacktest = async (
   formState: CreateIndexFormState,
 ): Promise<LaunchBacktestResponse> => {
@@ -169,7 +164,10 @@ export const runBacktest = async (
     formData.append("file", formState.uploadedFile);
   }
   formData.append("backtestName", formState.backtestName);
-  formData.append("indexType", INDEX_TYPE_MAP[formState.indexType] ?? formState.indexType);
+  formData.append(
+    "indexType",
+    INDEX_TYPE_MAP[formState.indexType] ?? formState.indexType,
+  );
   formData.append("returnTypes", toReturnTypesCsv(formState.returnTypes));
   formData.append("baseValue", String(Number(formState.baseValue)));
   formData.append("baseCurrency", formState.baseCurrency);
@@ -195,7 +193,10 @@ export const runBacktest = async (
   if (formState.description) {
     formData.append("description", formState.description);
   }
-  const response = await post<LaunchBacktestApiResponse>("/backtest/launch", formData);
+  const response = await post<LaunchBacktestApiResponse>(
+    "/backtest/launch",
+    formData,
+  );
   return response.data;
 };
 

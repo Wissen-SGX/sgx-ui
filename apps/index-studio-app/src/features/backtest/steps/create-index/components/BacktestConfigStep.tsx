@@ -6,7 +6,7 @@ import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
 import {
   BASE_CURRENCY_OPTIONS,
   CALENDAR_OPTIONS,
-} from "@/features/backtest/data";
+} from "@sgx/shared";
 import { ReturnTypeSelector } from "./ReturnTypeSelector";
 import { DecrementConfigSection } from "./DecrementConfigSection";
 import { CalendarSelector } from "./CalendarSelector";

@@ -41,7 +41,7 @@ export default function BacktestDashboardPage() {
   const [confirmEntry, setConfirmEntry] = useState<BacktestEntry | null>(null);
   const [alert, setAlert] = useState<AlertState | null>(null);
 
-  const { mutate: launchBacktest, isPending: isLaunching } = useLaunchDraftBacktest();
+  const { mutate: launchDraftBacktest, isPending: isLaunching } = useLaunchDraftBacktest();
 
   // Auto-dismiss alert after 5 s
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function BacktestDashboardPage() {
 
   const handleConfirmLaunch = () => {
     if (!confirmEntry) return;
-    launchBacktest(confirmEntry.id, {
+    launchDraftBacktest(confirmEntry.id, {
       onSuccess: (result: LaunchBacktestResponse) => {
         setConfirmEntry(null);
         setAlert({
