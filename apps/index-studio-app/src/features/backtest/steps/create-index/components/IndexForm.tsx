@@ -74,6 +74,7 @@ interface IndexFormProps {
   onSubmit: (formState: CreateIndexFormState) => void;
   onBack: () => void;
   isSavingDraft?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function IndexForm({
@@ -84,6 +85,7 @@ export function IndexForm({
   onSubmit,
   onBack,
   isSavingDraft = false,
+  isSubmitting = false,
 }: IndexFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formState, setFormState] = useState<CreateIndexFormState>(initialFormState);
@@ -216,10 +218,11 @@ export function IndexForm({
           ) : (
             <button
               onClick={() => onSubmit(formState)}
-              className="px-5 py-2.5 rounded-lg text-white text-sm"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 rounded-lg text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#0094B3" }}
             >
-              {submitLabel}
+              {isSubmitting ? "Launching…" : submitLabel}
             </button>
           )}
         </div>

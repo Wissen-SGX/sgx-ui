@@ -1,13 +1,20 @@
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Lock, Loader2 } from "lucide-react";
+import { ArrowLeft, Lock, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@sgx/ui";
 import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
 import { IndexForm, DEFAULT_FORM } from "./IndexForm";
 import { JobStatus, STATUS_OPTIONS } from "@sgx/shared";
 import { useGetBacktestById } from "@/features/backtest/hooks/useGetBacktests";
-import { useUpdateDraft } from "@/features/backtest/hooks/useBacktestMutations";
+import { useUpdateDraft, useLaunchDraftBacktest } from "@/features/backtest/hooks/useBacktestMutations";
 import { TYPE_LABELS } from "@/features/backtest/api/backtest.api";
 import { CALENDAR_OPTIONS } from "@/features/backtest/data";
 import type { BacktestDetailApiData } from "@/features/backtest/types/backtest.types";
+import LaunchConfirmDialog from "@/features/backtest/steps/dashboard/components/LaunchConfirmDialog";
+
+type AlertVariant = "success" | "destructive";
+interface AlertState { variant: AlertVariant; title: string; description: string; }
+const ALERT_AUTO_DISMISS_MS = 5000;
 
 // Convert API returnTypes CSV ("PR,TR") → ReturnTypes object
 function parseReturnTypes(csv: string): ReturnTypes {
@@ -58,6 +65,64 @@ export default function EditBacktestPage() {
   const { data, isLoading, isError } = useGetBacktestById(id ?? "");
 
   const { mutate: updateDraft, isPending: isUpdating } = useUpdateDraft();
+  const { mutate: launchDraft, isPending: isLaunching } = useLaunchDraftBacktest();
+
+  const [showLaunchDialog, setShowLaunchDialog] = useState(false);
+  const [alert, setAlert] = useState<AlertState | null>(null);
+  const navigateOnDismiss = useRef(false);
+  const launchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!alert) return;
+    const timer = setTimeout(() => {
+      setAlert(null);
+      if (navigateOnDismiss.current) {
+        navigateOnDismiss.current = false;
+        navigate("/backtest/dashboard");
+      }
+    }, ALERT_AUTO_DISMISS_MS);
+    return () => clearTimeout(timer);
+  }, [alert, navigate]);
+
+  const handleLaunch = () => {
+    setShowLaunchDialog(true);
+  };
+
+  const handleConfirmLaunch = () => {
+    if (!id) return;
+    launchDraft(id, {
+      onSuccess: () => {
+        setShowLaunchDialog(false);
+        launchedRef.current = true;
+        navigateOnDismiss.current = true;
+        setAlert({
+          variant: "success",
+          title: "Backtest Queued Successfully",
+          description: "Your backtest has been queued. Redirecting to dashboard…",
+        });
+      },
+      onError: (error: unknown) => {
+        setShowLaunchDialog(false);
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        setAlert({
+          variant: "destructive",
+          title:
+            status === 400
+              ? "Validation Error"
+              : status === 404
+                ? "Universe Not Found"
+                : "Launch Failed",
+          description:
+            status === 400
+              ? "Validation failed, missing CSV, or universe is not ready."
+              : status === 404
+                ? "The universe could not be found. Please check your configuration."
+                : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -87,7 +152,7 @@ export default function EditBacktestPage() {
     );
   }
 
-  if (data.status !== JobStatus.DRAFT) {
+  if (data.status !== JobStatus.DRAFT && !launchedRef.current) {
     const statusLabel =
       STATUS_OPTIONS.find((o) => o.value === data.status)?.label ?? data.status;
     return (
@@ -151,15 +216,39 @@ export default function EditBacktestPage() {
   };
 
   return (
-    <IndexForm
-      key={id}
-      initialFormState={initialFormState}
-      pageTitle="Edit Index"
-      submitLabel="Update Backtest"
-      onSaveAsDraft={handleSaveAsDraft}
-      onSubmit={handleSaveAsDraft}
-      onBack={() => navigate("/backtest/dashboard")}
-      isSavingDraft={isUpdating}
-    />
+    <div className="space-y-4">
+      {alert && (
+        <Alert variant={alert.variant}>
+          {alert.variant === "success" ? (
+            <CheckCircle2 className="h-4 w-4" />
+          ) : (
+            <AlertCircle className="h-4 w-4" />
+          )}
+          <AlertTitle>{alert.title}</AlertTitle>
+          <AlertDescription>{alert.description}</AlertDescription>
+        </Alert>
+      )}
+
+      <IndexForm
+        key={id}
+        initialFormState={initialFormState}
+        pageTitle="Edit Index"
+        submitLabel="Launch Backtest"
+        onSaveAsDraft={handleSaveAsDraft}
+        onSubmit={handleLaunch}
+        onBack={() => navigate("/backtest/dashboard")}
+        isSavingDraft={isUpdating}
+        isSubmitting={isLaunching}
+      />
+
+      {showLaunchDialog && (
+        <LaunchConfirmDialog
+          backtestName={data.backtestName}
+          isLoading={isLaunching}
+          onConfirm={handleConfirmLaunch}
+          onCancel={() => setShowLaunchDialog(false)}
+        />
+      )}
+    </div>
   );
 }

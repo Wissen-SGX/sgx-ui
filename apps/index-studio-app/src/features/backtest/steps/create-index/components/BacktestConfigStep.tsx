@@ -131,13 +131,13 @@ export function BacktestConfigStep({
                 </span>
               ) : (
                 <span className="text-xs" style={{ color: "#9CA3AF" }}>
-                  .csv, .xlsx, .xls
+                  .csv
                 </span>
               )}
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv,.xlsx,.xls"
+                accept=".csv"
                 className="hidden"
                 onChange={handleFileChange}
               />
