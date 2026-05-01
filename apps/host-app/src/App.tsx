@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { LoadingScreen } from "@sgx/ui";
+import { LoadingSpinner } from "@sgx/ui";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@sgx/query-client";
 import { fetchCurrentUser } from "./api/auth.api";
@@ -11,10 +11,16 @@ const AuthApp = lazy(() =>
   })),
 );
 
-const MainApp = lazy(() =>
+const IndexStudioApp = lazy(() =>
   import("index-studio/App").catch(() => ({
-    default: () => <div>Main failed to load</div>,
+    default: () => <div>Index Studio failed to load</div>,
   })),
+);
+
+const centeredSpinner = (
+  <div className="centered-spinner">
+    <LoadingSpinner />
+  </div>
 );
 
 function AppRouter() {
@@ -24,11 +30,11 @@ function AppRouter() {
     retry: false,
   });
 
-  if (isLoading) return <LoadingScreen isFading={false} />;
+  if (isLoading) return centeredSpinner;
 
   return (
-    <Suspense fallback={<LoadingScreen isFading={false} />}>
-      {user ? <MainApp /> : <AuthApp />}
+    <Suspense fallback={centeredSpinner}>
+      {user ? <IndexStudioApp /> : <AuthApp />}
     </Suspense>
   );
 }
