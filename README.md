@@ -66,7 +66,7 @@ sgx/
 │           └── main.tsx
 ├── packages/
 │   ├── shared/
-│   └── ui/
+│   └── ui-components/
 ├── infra/
 │   ├── nginx/
 │   │   └── nginx.conf

@@ -56,7 +56,7 @@ sgx-frontend/
 │       └── .env.prod
 ├── packages/
 │   ├── shared/                # Shared utilities (source-only)
-│   └── ui/                    # Shared UI components (source-only)
+│   └── ui-components/                    # Shared UI components (source-only)
 ├── infra/
 │   ├── deploy/
 │   │   ├── ecs-task-definition.dev.json
@@ -89,28 +89,28 @@ sgx-frontend/
 
 Vite loads env files at **build time only** — values are baked into the static output. There are no runtime env vars in the container.
 
-| File | When loaded |
-|------|-------------|
-| `.env` | Always (base defaults) |
-| `.env.dev` | `vite build --mode dev` |
-| `.env.uat` | `vite build --mode uat` |
+| File        | When loaded              |
+| ----------- | ------------------------ |
+| `.env`      | Always (base defaults)   |
+| `.env.dev`  | `vite build --mode dev`  |
+| `.env.uat`  | `vite build --mode uat`  |
 | `.env.prod` | `vite build --mode prod` |
 
 ### 3.2 env variables per app
 
 **auth-app** and **index-studio-app** (per environment):
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `VITE_APP_ENV` | Environment label | `dev` / `uat` / `prod` |
+| Variable            | Description          | Example                               |
+| ------------------- | -------------------- | ------------------------------------- |
+| `VITE_APP_ENV`      | Environment label    | `dev` / `uat` / `prod`                |
 | `VITE_API_BASE_URL` | Backend API base URL | `https://api-dev.sgx.example.com/api` |
 
 **host-app** (per environment):
 
-| Variable | Description | Value (all environments) |
-|----------|-------------|--------------------------|
-| `VITE_APP_ENV` | Environment label | `dev` / `uat` / `production` |
-| `VITE_AUTH_APP_URL` | auth-app remoteEntry URL | `/auth/remoteEntry.js` |
+| Variable                    | Description                      | Value (all environments)       |
+| --------------------------- | -------------------------------- | ------------------------------ |
+| `VITE_APP_ENV`              | Environment label                | `dev` / `uat` / `production`   |
+| `VITE_AUTH_APP_URL`         | auth-app remoteEntry URL         | `/auth/remoteEntry.js`         |
 | `VITE_INDEX_STUDIO_APP_URL` | index-studio-app remoteEntry URL | `/index-studio/remoteEntry.js` |
 
 > **Important:** All three environments (dev, uat, prod) use **relative paths** for federation remote URLs. Since all microfrontends are served from the same nginx container and domain, relative paths are correct everywhere — no cross-origin issues, and no URL to update when domains change. Do not use absolute URLs for these variables.
@@ -137,13 +137,13 @@ Federation URLs in `apps/host-app/.env.*` should remain as relative paths (`/aut
 
 ### 4.1 npm scripts (local development only)
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev:all` | Start all 3 apps in dev mode (HMR) |
-| `npm run start:local` | Build + preview with local defaults |
-| `npm run start:dev` | Build with dev env + preview locally |
-| `npm run start:uat` | Build with uat env + preview locally |
-| `npm run start:prod` | Build with prod env + preview locally |
+| Command               | Description                           |
+| --------------------- | ------------------------------------- |
+| `npm run dev:all`     | Start all 3 apps in dev mode (HMR)    |
+| `npm run start:local` | Build + preview with local defaults   |
+| `npm run start:dev`   | Build with dev env + preview locally  |
+| `npm run start:uat`   | Build with uat env + preview locally  |
+| `npm run start:prod`  | Build with prod env + preview locally |
 
 Local preview ports: host `4000` · auth `4001` · index-studio `4002`
 
@@ -165,10 +165,10 @@ BUILD_ENV=prod  → loads .env.prod for all apps (default)
 
 The Dockerfile uses a **two-stage build**:
 
-| Stage | Base image | Purpose |
-|-------|-----------|---------|
-| `builder` | `artifactory-n.devops.sgx.com/docker-all/sgx/builder/node-22-a11:v5.2-1` | Install dependencies, run Vite builds |
-| `production` | `artifactory-n.devops.sgx.com/docker-all/nginx:1.29.4` | Serve static files |
+| Stage        | Base image                                                               | Purpose                               |
+| ------------ | ------------------------------------------------------------------------ | ------------------------------------- |
+| `builder`    | `artifactory-n.devops.sgx.com/docker-all/sgx/builder/node-22-a11:v5.2-1` | Install dependencies, run Vite builds |
+| `production` | `artifactory-n.devops.sgx.com/docker-all/nginx:1.29.4`                   | Serve static files                    |
 
 Build output layout inside the nginx container:
 
@@ -249,6 +249,7 @@ ECS_SERVICE_PROD=sgx-frontend-prod
 ```
 
 The script will:
+
 1. Authenticate Docker with ECR
 2. Tag the local image as `<account>.dkr.ecr.<region>.amazonaws.com/sgx-frontend:<env>`
 3. Push to ECR
@@ -289,11 +290,11 @@ Also update `awslogs-region` in each file if your region differs from `ap-southe
 
 ### 7.3 Task definition resource sizing
 
-| Environment | CPU | Memory |
-|-------------|-----|--------|
-| dev | 256 (.25 vCPU) | 512 MB |
-| uat | 256 (.25 vCPU) | 512 MB |
-| prod | 512 (.5 vCPU) | 1024 MB |
+| Environment | CPU            | Memory  |
+| ----------- | -------------- | ------- |
+| dev         | 256 (.25 vCPU) | 512 MB  |
+| uat         | 256 (.25 vCPU) | 512 MB  |
+| prod        | 512 (.5 vCPU)  | 1024 MB |
 
 ### 7.4 Deploy to ECS
 
@@ -304,6 +305,7 @@ Also update `awslogs-region` in each file if your region differs from `ap-southe
 ```
 
 The script will:
+
 1. Register a new task definition revision with the latest ECR image URI
 2. Update the ECS service to use the new task definition
 3. Trigger a rolling deployment (`--force-new-deployment`)
@@ -335,19 +337,20 @@ This runs all three steps in sequence — docker-build → ecr-push → ecs-depl
 
 CI secrets to configure:
 
-| Secret | Value |
-|--------|-------|
-| `AWS_REGION` | e.g. `ap-southeast-1` |
-| `AWS_ACCOUNT_ID` | AWS account number |
-| `ECR_REPO` | `sgx-frontend` |
-| `ECS_CLUSTER` | ECS cluster name |
-| `ECS_SERVICE_DEV` | ECS service name for dev |
-| `ECS_SERVICE_UAT` | ECS service name for uat |
+| Secret             | Value                     |
+| ------------------ | ------------------------- |
+| `AWS_REGION`       | e.g. `ap-southeast-1`     |
+| `AWS_ACCOUNT_ID`   | AWS account number        |
+| `ECR_REPO`         | `sgx-frontend`            |
+| `ECS_CLUSTER`      | ECS cluster name          |
+| `ECS_SERVICE_DEV`  | ECS service name for dev  |
+| `ECS_SERVICE_UAT`  | ECS service name for uat  |
 | `ECS_SERVICE_PROD` | ECS service name for prod |
 
 ### 8.3 ECS networking requirements
 
 The ECS service needs:
+
 - **Subnets:** private subnets with NAT gateway (to pull from ECR)
 - **Security group:** inbound port 80 from ALB security group only
 - **Load balancer:** Application Load Balancer (ALB) in public subnets forwarding to target group on port 80
@@ -358,14 +361,15 @@ The ECS service needs:
 
 The nginx config routes requests to the correct app based on URL path:
 
-| Path | Serves | Falls back to |
-|------|--------|---------------|
-| `/health` | Health check response | — |
-| `/auth/*` | auth-app static files | `/auth/index.html` (SPA) |
+| Path              | Serves                        | Falls back to                    |
+| ----------------- | ----------------------------- | -------------------------------- |
+| `/health`         | Health check response         | —                                |
+| `/auth/*`         | auth-app static files         | `/auth/index.html` (SPA)         |
 | `/index-studio/*` | index-studio-app static files | `/index-studio/index.html` (SPA) |
-| `/*` | host-app static files | `/index.html` (SPA) |
+| `/*`              | host-app static files         | `/index.html` (SPA)              |
 
 **Caching headers:**
+
 - HTML entry points (`index.html`) → `no-cache` (always fresh)
 - Hashed assets (`.js`, `.css`, images, fonts) → `Cache-Control: public, immutable, max-age=1y`
 
@@ -378,6 +382,7 @@ The nginx config routes requests to the correct app based on URL path:
 nginx exposes a health endpoint at `/health` that returns HTTP 200 with body `healthy`.
 
 Used by:
+
 - Docker `HEALTHCHECK` directive in the Dockerfile
 - ECS container health check
 - ALB target group health check — configure the ALB target group to use path `/health`, port `80`, protocol `HTTP`
@@ -387,19 +392,23 @@ Used by:
 ## 11. Troubleshooting
 
 ### Container starts but shows blank page
+
 - Check browser console for failed network requests
 - Verify the ALB target group health check passes on `/health`
 - Confirm the correct `BUILD_ENV` was used when building the image
 
 ### remoteEntry.js 404
+
 - The host-app is trying to load a microfrontend remote that wasn't built or is at the wrong path
 - For container deployments, `apps/host-app/.env.<env>` must use relative paths: `/auth/remoteEntry.js` and `/index-studio/remoteEntry.js`
 
 ### ECR push: unauthorized
+
 - Re-run: `aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com`
 - Check IAM user/role has `ecr:GetAuthorizationToken` + `ecr:BatchCheckLayerAvailability` + `ecr:PutImage` permissions
 
 ### ECS service stuck in deployment
+
 ```bash
 # Check service events
 aws ecs describe-services \
@@ -416,6 +425,7 @@ aws ecs describe-tasks \
 ```
 
 ### View live logs
+
 ```bash
 aws logs tail /ecs/sgx-frontend-<env> --follow --region ap-southeast-1
 ```

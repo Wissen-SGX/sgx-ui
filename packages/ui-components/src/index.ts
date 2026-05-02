@@ -70,4 +70,5 @@ export {
   FormField,
 } from './components/form/Form';
 export { default as LoadingScreen } from "./components/loader/LoadingScreen";
+export { default as LoadingSpinner } from "./components/loader/LoadingSpinner";
 export { cn } from './utils';

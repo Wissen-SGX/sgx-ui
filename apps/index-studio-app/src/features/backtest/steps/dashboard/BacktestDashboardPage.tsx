@@ -1,23 +1,16 @@
-import { lazy, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, RotateCw, CheckCircle2, AlertCircle } from "lucide-react";
-import { Button, Alert, AlertTitle, AlertDescription } from "@sgx/ui";
+import { Button, Alert, AlertTitle, AlertDescription, LoadingSpinner } from "@sgx/ui";
 import { useGetBacktests } from "@/features/backtest/hooks/useGetBacktests";
 import { useLaunchDraftBacktest, type LaunchBacktestResponse } from "@/features/backtest/hooks/useBacktestMutations";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setDashboardFilter } from "@/store/slices/backtestUiSlice";
 import type { BacktestEntry } from "@/features/backtest/types";
 import LaunchConfirmDialog from "./components/LaunchConfirmDialog";
-
-const BacktestStatusCards = lazy(
-  () => import("@/features/backtest/steps/dashboard/components/BacktestStatusCards"),
-);
-const BacktestFilters = lazy(
-  () => import("@/features/backtest/steps/dashboard/components/BacktestFilters"),
-);
-const BacktestTable = lazy(
-  () => import("@/features/backtest/steps/dashboard/components/BacktestTable"),
-);
+import BacktestStatusCards from "@/features/backtest/steps/dashboard/components/BacktestStatusCards";
+import BacktestFilters from "@/features/backtest/steps/dashboard/components/BacktestFilters";
+import BacktestTable from "@/features/backtest/steps/dashboard/components/BacktestTable";
 
 type AlertVariant = "success" | "destructive";
 
@@ -153,24 +146,32 @@ export default function BacktestDashboardPage() {
         </Alert>
       )}
 
-      <BacktestStatusCards counts={data.stats} />
+      {isLoading ? (
+        <div className="flex justify-center items-center py-24">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <>
+          <BacktestStatusCards counts={data.stats} />
 
-      <BacktestFilters
-        searchQuery={searchQuery}
-        onSearchChange={(val) => dispatch(setDashboardFilter({ searchQuery: val }))}
-        statusFilter={statusFilter}
-        onStatusChange={(val) => dispatch(setDashboardFilter({ statusFilter: val }))}
-        typeFilter={typeFilter}
-        onTypeChange={(val) => dispatch(setDashboardFilter({ typeFilter: val }))}
-        onRefresh={() => refetch()}
-      />
+          <BacktestFilters
+            searchQuery={searchQuery}
+            onSearchChange={(val) => dispatch(setDashboardFilter({ searchQuery: val }))}
+            statusFilter={statusFilter}
+            onStatusChange={(val) => dispatch(setDashboardFilter({ statusFilter: val }))}
+            typeFilter={typeFilter}
+            onTypeChange={(val) => dispatch(setDashboardFilter({ typeFilter: val }))}
+            onRefresh={() => refetch()}
+          />
 
-      <BacktestTable
-        entries={filtered}
-        onRun={handleRun}
-        onStop={handleStop}
-        onEdit={handleEdit}
-      />
+          <BacktestTable
+            entries={filtered}
+            onRun={handleRun}
+            onStop={handleStop}
+            onEdit={handleEdit}
+          />
+        </>
+      )}
 
       {/* Launch confirm dialog — rendered outside table to avoid z-index issues */}
       {confirmEntry && (
