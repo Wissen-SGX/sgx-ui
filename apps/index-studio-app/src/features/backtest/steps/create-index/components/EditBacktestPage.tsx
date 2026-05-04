@@ -71,6 +71,8 @@ export default function EditBacktestPage() {
   const [alert, setAlert] = useState<AlertState | null>(null);
   const navigateOnDismiss = useRef(false);
   const launchedRef = useRef(false);
+  const pendingFormState = useRef<CreateIndexFormState | null>(null);
+  const pendingIsDirty = useRef(false);
 
   useEffect(() => {
     if (!alert) return;
@@ -84,44 +86,69 @@ export default function EditBacktestPage() {
     return () => clearTimeout(timer);
   }, [alert, navigate]);
 
-  const handleLaunch = () => {
+  const handleLaunch = (formState: CreateIndexFormState, isDirty: boolean) => {
+    pendingFormState.current = formState;
+    pendingIsDirty.current = isDirty;
     setShowLaunchDialog(true);
   };
 
   const handleConfirmLaunch = () => {
-    if (!id) return;
-    launchDraft(id, {
-      onSuccess: () => {
-        setShowLaunchDialog(false);
-        launchedRef.current = true;
-        navigateOnDismiss.current = true;
-        setAlert({
-          variant: "success",
-          title: "Backtest Queued Successfully",
-          description: "Your backtest has been queued. Redirecting to dashboard…",
-        });
-      },
-      onError: (error: unknown) => {
-        setShowLaunchDialog(false);
-        const status = (error as { response?: { status?: number } })?.response?.status;
-        setAlert({
-          variant: "destructive",
-          title:
-            status === 400
-              ? "Validation Error"
-              : status === 404
-                ? "Universe Not Found"
-                : "Launch Failed",
-          description:
-            status === 400
-              ? "Validation failed, missing CSV, or universe is not ready."
-              : status === 404
-                ? "The universe could not be found. Please check your configuration."
-                : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
-        });
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      },
-    });
+    if (!id || !pendingFormState.current) return;
+
+    const doLaunch = () => {
+      launchDraft(id, {
+        onSuccess: () => {
+          setShowLaunchDialog(false);
+          launchedRef.current = true;
+          navigateOnDismiss.current = true;
+          setAlert({
+            variant: "success",
+            title: "Backtest Queued Successfully",
+            description: "Your backtest has been queued. Redirecting to dashboard…",
+          });
+        },
+        onError: (error: unknown) => {
+          setShowLaunchDialog(false);
+          const status = (error as { response?: { status?: number } })?.response?.status;
+          setAlert({
+            variant: "destructive",
+            title:
+              status === 400
+                ? "Validation Error"
+                : status === 404
+                  ? "Universe Not Found"
+                  : "Launch Failed",
+            description:
+              status === 400
+                ? "Validation failed, missing CSV, or universe is not ready."
+                : status === 404
+                  ? "The universe could not be found. Please check your configuration."
+                  : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
+          });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        },
+      });
+    };
+
+    if (pendingIsDirty.current) {
+      updateDraft(
+        { id, formState: pendingFormState.current },
+        {
+          onSuccess: doLaunch,
+          onError: () => {
+            setShowLaunchDialog(false);
+            setAlert({
+              variant: "destructive",
+              title: "Save Failed",
+              description: "Could not save changes before launching. Please try again.",
+            });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          },
+        },
+      );
+    } else {
+      doLaunch();
+    }
   };
 
   if (isLoading) {

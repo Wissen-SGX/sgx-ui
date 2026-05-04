@@ -190,9 +190,7 @@ export const runBacktest = async (
   if (formState.backtestEndDate) {
     formData.append("backtestEndDate", formState.backtestEndDate);
   }
-  if (formState.description) {
-    formData.append("description", formState.description);
-  }
+  formData.append("description", formState.description);
   const response = await post<LaunchBacktestApiResponse>(
     "/backtest/launch",
     formData,
@@ -228,9 +226,7 @@ export const saveAsDraft = (
   if (formState.backtestEndDate) {
     formData.append("backtestEndDate", formState.backtestEndDate);
   }
-  if (formState.description) {
-    formData.append("description", formState.description);
-  }
+  formData.append("description", formState.description);
 
   return post<BacktestEntry>("/backtest/draft", formData);
 };
@@ -258,9 +254,7 @@ export const updateDraft = (
   if (formState.backtestEndDate) {
     formData.append("backtestEndDate", formState.backtestEndDate);
   }
-  if (formState.description) {
-    formData.append("description", formState.description);
-  }
+  formData.append("description", formState.description);
   return put<BacktestDetailApiData>(`/backtest/${id}/draft`, formData);
 };
 
