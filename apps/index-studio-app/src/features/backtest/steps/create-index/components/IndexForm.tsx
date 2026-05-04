@@ -71,7 +71,7 @@ interface IndexFormProps {
   pageTitle: string;
   submitLabel: string;
   onSaveAsDraft: (formState: CreateIndexFormState) => void;
-  onSubmit: (formState: CreateIndexFormState) => void;
+  onSubmit: (formState: CreateIndexFormState, isDirty: boolean) => void;
   onBack: () => void;
   isSavingDraft?: boolean;
   isSubmitting?: boolean;
@@ -90,12 +90,14 @@ export function IndexForm({
   const [currentStep, setCurrentStep] = useState(1);
   const [formState, setFormState] = useState<CreateIndexFormState>(initialFormState);
   const [hasAttemptedProgress, setHasAttemptedProgress] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   const step1Errors: Step1Errors = hasAttemptedProgress ? computeStep1Errors(formState) : {};
   const hasStep1Errors = Object.keys(step1Errors).length > 0;
 
   const handleChange = (updates: Partial<CreateIndexFormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
+    setIsDirty(true);
   };
 
   const handleReturnTypeChange = (type: keyof ReturnTypes) => {
@@ -115,6 +117,7 @@ export function IndexForm({
       }
       return { ...prev, returnTypes: { ...rt, [type]: !rt[type] } };
     });
+    setIsDirty(true);
   };
 
   const handleCalendarToggle = (calendar: string) => {
@@ -124,6 +127,7 @@ export function IndexForm({
         ? prev.selectedCalendars.filter((c) => c !== calendar)
         : [...prev.selectedCalendars, calendar],
     }));
+    setIsDirty(true);
   };
 
   // Step 2 (Backtest Parameters) is skipped — flow goes directly 1 → 3
@@ -217,7 +221,7 @@ export function IndexForm({
             </button>
           ) : (
             <button
-              onClick={() => onSubmit(formState)}
+              onClick={() => onSubmit(formState, isDirty)}
               disabled={isSubmitting}
               className="px-5 py-2.5 rounded-lg text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#0094B3" }}
