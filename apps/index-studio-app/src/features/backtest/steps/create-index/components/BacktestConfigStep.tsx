@@ -14,7 +14,7 @@ import { ParameterSelectors } from "./ParameterSelectors";
 export function BacktestConfigStep() {
   const { universes, filterSets, rankingRules, weightingConfigurations } =
     useBacktest();
-  const { control, setValue, watch } = useFormContext<CreateIndexFormState>();
+  const { control, setValue, watch, trigger } = useFormContext<CreateIndexFormState>();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const indexType = watch("indexType");
@@ -174,6 +174,7 @@ export function BacktestConfigStep() {
                   updated = { ...current, [type]: !current[type] };
                 }
                 field.onChange(updated);
+                trigger("returnTypes");
               }}
             />
             {fieldState.error && (

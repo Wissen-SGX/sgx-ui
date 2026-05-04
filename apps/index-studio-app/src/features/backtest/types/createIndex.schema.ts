@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createIndexSchema = z
   .object({
-    backtestName: z.string().min(1, "Backtest name is required."),
+    backtestName: z.string(),
     indexType: z.string(),
     returnTypes: z.object({
       priceReturn: z.boolean(),
