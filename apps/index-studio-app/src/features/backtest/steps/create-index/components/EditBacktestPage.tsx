@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -71,6 +71,18 @@ function apiDataToFormState(data: BacktestDetailApiData): CreateIndexFormState {
   };
 }
 
+// Returns true if the user made any changes compared to the original draft data
+function hasFormChanged(
+  initial: CreateIndexFormState,
+  current: CreateIndexFormState,
+): boolean {
+  // A newly selected file is always a change
+  if (current.uploadedFile !== null) return true;
+  const { uploadedFile: _a, ...initialRest } = initial;
+  const { uploadedFile: _b, ...currentRest } = current;
+  return JSON.stringify(initialRest) !== JSON.stringify(currentRest);
+}
+
 export default function EditBacktestPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -85,6 +97,12 @@ export default function EditBacktestPage() {
   const [alert, setAlert] = useState<AlertState | null>(null);
   const navigateOnDismiss = useRef(false);
   const launchedRef = useRef(false);
+  const pendingFormStateRef = useRef<CreateIndexFormState | null>(null);
+
+  const initialFormState = useMemo(
+    () => (data ? apiDataToFormState(data) : null),
+    [data],
+  );
 
   useEffect(() => {
     if (!alert) return;
@@ -98,46 +116,75 @@ export default function EditBacktestPage() {
     return () => clearTimeout(timer);
   }, [alert, navigate]);
 
-  const handleLaunch = () => {
+  const handleLaunchSuccess = () => {
+    setShowLaunchDialog(false);
+    launchedRef.current = true;
+    navigateOnDismiss.current = true;
+    setAlert({
+      variant: "success",
+      title: "Backtest Queued Successfully",
+      description: "Your backtest has been queued. Redirecting to dashboard…",
+    });
+  };
+
+  const handleLaunchError = (error: unknown) => {
+    setShowLaunchDialog(false);
+    const status = (error as { response?: { status?: number } })?.response
+      ?.status;
+    setAlert({
+      variant: "destructive",
+      title:
+        status === 400
+          ? "Validation Error"
+          : status === 404
+            ? "Universe Not Found"
+            : "Launch Failed",
+      description:
+        status === 400
+          ? "Validation failed, missing CSV, or universe is not ready."
+          : status === 404
+            ? "The universe could not be found. Please check your configuration."
+            : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleLaunch = (formState: CreateIndexFormState) => {
+    pendingFormStateRef.current = formState;
     setShowLaunchDialog(true);
   };
 
   const handleConfirmLaunch = () => {
-    if (!id) return;
-    launchDraft(id, {
-      onSuccess: () => {
-        setShowLaunchDialog(false);
-        launchedRef.current = true;
-        navigateOnDismiss.current = true;
-        setAlert({
-          variant: "success",
-          title: "Backtest Queued Successfully",
-          description:
-            "Your backtest has been queued. Redirecting to dashboard…",
-        });
-      },
-      onError: (error: unknown) => {
-        setShowLaunchDialog(false);
-        const status = (error as { response?: { status?: number } })?.response
-          ?.status;
-        setAlert({
-          variant: "destructive",
-          title:
-            status === 400
-              ? "Validation Error"
-              : status === 404
-                ? "Universe Not Found"
-                : "Launch Failed",
-          description:
-            status === 400
-              ? "Validation failed, missing CSV, or universe is not ready."
-              : status === 404
-                ? "The universe could not be found. Please check your configuration."
-                : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
-        });
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      },
-    });
+    if (!id || !initialFormState) return;
+    const formState = pendingFormStateRef.current;
+
+    if (formState && hasFormChanged(initialFormState, formState)) {
+      updateDraft(
+        { id, formState },
+        {
+          onSuccess: () =>
+            launchDraft(id, {
+              onSuccess: handleLaunchSuccess,
+              onError: handleLaunchError,
+            }),
+          onError: () => {
+            setShowLaunchDialog(false);
+            setAlert({
+              variant: "destructive",
+              title: "Save Failed",
+              description:
+                "Failed to save changes before launching. Please try again.",
+            });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          },
+        },
+      );
+    } else {
+      launchDraft(id, {
+        onSuccess: handleLaunchSuccess,
+        onError: handleLaunchError,
+      });
+    }
   };
 
   if (isLoading) {
@@ -221,8 +268,6 @@ export default function EditBacktestPage() {
     );
   }
 
-  const initialFormState = apiDataToFormState(data);
-
   const handleSaveAsDraft = (formState: CreateIndexFormState) => {
     if (!id) return;
     updateDraft(
@@ -247,20 +292,20 @@ export default function EditBacktestPage() {
 
       <IndexForm
         key={id}
-        initialFormState={initialFormState}
+        initialFormState={initialFormState ?? undefined}
         pageTitle="Edit Index"
         submitLabel="Launch Backtest"
         onSaveAsDraft={handleSaveAsDraft}
         onSubmit={handleLaunch}
         onBack={() => navigate("/backtest/dashboard")}
         isSavingDraft={isUpdating}
-        isSubmitting={isLaunching}
+        isSubmitting={isLaunching || isUpdating}
       />
 
       {showLaunchDialog && (
         <LaunchConfirmDialog
           backtestName={data.backtestName}
-          isLoading={isLaunching}
+          isLoading={isLaunching || isUpdating}
           onConfirm={handleConfirmLaunch}
           onCancel={() => setShowLaunchDialog(false)}
         />
