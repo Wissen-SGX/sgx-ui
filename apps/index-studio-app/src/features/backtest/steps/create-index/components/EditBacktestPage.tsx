@@ -1,19 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Lock, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Lock,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@sgx/ui";
 import { CreateIndexFormState, ReturnTypes } from "@/features/backtest/types";
 import { IndexForm, DEFAULT_FORM } from "./IndexForm";
 import { JobStatus, STATUS_OPTIONS } from "@sgx/shared";
 import { useGetBacktestById } from "@/features/backtest/hooks/useGetBacktests";
-import { useUpdateDraft, useLaunchDraftBacktest } from "@/features/backtest/hooks/useBacktestMutations";
+import {
+  useUpdateDraft,
+  useLaunchDraftBacktest,
+} from "@/features/backtest/hooks/useBacktestMutations";
 import { TYPE_LABELS } from "@/features/backtest/api/backtest.api";
 import { CALENDAR_OPTIONS } from "@sgx/shared";
 import type { BacktestDetailApiData } from "@/features/backtest/types/backtest.types";
 import LaunchConfirmDialog from "@/features/backtest/steps/dashboard/components/LaunchConfirmDialog";
 
 type AlertVariant = "success" | "destructive";
-interface AlertState { variant: AlertVariant; title: string; description: string; }
+interface AlertState {
+  variant: AlertVariant;
+  title: string;
+  description: string;
+}
 const ALERT_AUTO_DISMISS_MS = 5000;
 
 // Convert API returnTypes CSV ("PR,TR") → ReturnTypes object
@@ -65,14 +78,13 @@ export default function EditBacktestPage() {
   const { data, isLoading, isError } = useGetBacktestById(id ?? "");
 
   const { mutate: updateDraft, isPending: isUpdating } = useUpdateDraft();
-  const { mutate: launchDraft, isPending: isLaunching } = useLaunchDraftBacktest();
+  const { mutate: launchDraft, isPending: isLaunching } =
+    useLaunchDraftBacktest();
 
   const [showLaunchDialog, setShowLaunchDialog] = useState(false);
   const [alert, setAlert] = useState<AlertState | null>(null);
   const navigateOnDismiss = useRef(false);
   const launchedRef = useRef(false);
-  const pendingFormState = useRef<CreateIndexFormState | null>(null);
-  const pendingIsDirty = useRef(false);
 
   useEffect(() => {
     if (!alert) return;
@@ -86,69 +98,46 @@ export default function EditBacktestPage() {
     return () => clearTimeout(timer);
   }, [alert, navigate]);
 
-  const handleLaunch = (formState: CreateIndexFormState, isDirty: boolean) => {
-    pendingFormState.current = formState;
-    pendingIsDirty.current = isDirty;
+  const handleLaunch = () => {
     setShowLaunchDialog(true);
   };
 
   const handleConfirmLaunch = () => {
-    if (!id || !pendingFormState.current) return;
-
-    const doLaunch = () => {
-      launchDraft(id, {
-        onSuccess: () => {
-          setShowLaunchDialog(false);
-          launchedRef.current = true;
-          navigateOnDismiss.current = true;
-          setAlert({
-            variant: "success",
-            title: "Backtest Queued Successfully",
-            description: "Your backtest has been queued. Redirecting to dashboard…",
-          });
-        },
-        onError: (error: unknown) => {
-          setShowLaunchDialog(false);
-          const status = (error as { response?: { status?: number } })?.response?.status;
-          setAlert({
-            variant: "destructive",
-            title:
-              status === 400
-                ? "Validation Error"
-                : status === 404
-                  ? "Universe Not Found"
-                  : "Launch Failed",
-            description:
-              status === 400
-                ? "Validation failed, missing CSV, or universe is not ready."
-                : status === 404
-                  ? "The universe could not be found. Please check your configuration."
-                  : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
-          });
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        },
-      });
-    };
-
-    if (pendingIsDirty.current) {
-      updateDraft(
-        { id, formState: pendingFormState.current },
-        {
-          onSuccess: doLaunch,
-          onError: () => {
-            setShowLaunchDialog(false);
-            setAlert({
-              variant: "destructive",
-              title: "Save Failed",
-              description: "Could not save changes before launching. Please try again.",
-            });
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          },
-        },
-      );
-    } else {
-      doLaunch();
-    }
+    if (!id) return;
+    launchDraft(id, {
+      onSuccess: () => {
+        setShowLaunchDialog(false);
+        launchedRef.current = true;
+        navigateOnDismiss.current = true;
+        setAlert({
+          variant: "success",
+          title: "Backtest Queued Successfully",
+          description:
+            "Your backtest has been queued. Redirecting to dashboard…",
+        });
+      },
+      onError: (error: unknown) => {
+        setShowLaunchDialog(false);
+        const status = (error as { response?: { status?: number } })?.response
+          ?.status;
+        setAlert({
+          variant: "destructive",
+          title:
+            status === 400
+              ? "Validation Error"
+              : status === 404
+                ? "Universe Not Found"
+                : "Launch Failed",
+          description:
+            status === 400
+              ? "Validation failed, missing CSV, or universe is not ready."
+              : status === 404
+                ? "The universe could not be found. Please check your configuration."
+                : "The Airflow pipeline trigger failed. This backtest has been marked as FAILED.",
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+    });
   };
 
   if (isLoading) {

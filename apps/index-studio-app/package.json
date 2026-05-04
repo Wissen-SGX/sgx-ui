@@ -19,9 +19,11 @@
     "format:check": "prettier --check src"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
     "@module-federation/vite": "1.14.3",
     "@reduxjs/toolkit": "2.11.2",
     "react-redux": "^9.2.0",
+    "zod": "^3.24.0",
     "@sgx/api-client": "file:../../packages/api-client",
     "@sgx/query-client": "file:../../packages/query-client",
     "@sgx/shared": "file:../../packages/shared",
