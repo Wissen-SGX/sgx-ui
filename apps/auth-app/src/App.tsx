@@ -20,8 +20,14 @@ export default function App() {
     setIsLoading(true);
     try {
       await login(form);
-      // Full reload so host-app re-checks auth state from scratch
-      window.location.href = '/';
+      // Notify host-app (when embedded via module federation) to re-check auth
+      // without a page reload. If no host-app is listening (standalone mode),
+      // fall back to a full navigation to the root so the host-app loads fresh.
+      const event = new CustomEvent('sgx:auth-state-changed', { cancelable: true });
+      window.dispatchEvent(event);
+      if (!event.defaultPrevented) {
+        window.location.href = '/';
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     } finally {
