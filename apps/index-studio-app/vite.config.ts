@@ -3,25 +3,24 @@ import react from "@vitejs/plugin-react";
 import { federation } from "@module-federation/vite";
 import { resolve } from "path";
 
-export default defineConfig(({ mode, command }) => {
+export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const devHost = env.VITE_DEV_HOST || "localhost";
   const isLocalDev = mode === "development";
-  // 'vite build' with no --mode flag → mode='production' → start:local
-  // 'vite build --mode dev-preview' → start:dev/uat/prod
-  const isPreviewBuild =
-    command === "build" && (mode === "production" || mode.endsWith("-preview"));
+
+  // ec2 + *-preview: absolute URL so the browser fetches assets from the correct preview port
+  // direct deploy modes (dev / uat / production): relative path for Nginx proxy
   const base = isLocalDev
     ? "/"
-    : isPreviewBuild
+    : mode === "ec2" || mode.endsWith("-preview")
       ? `http://${devHost}:4002/index-studio/`
       : "/index-studio/";
 
-  // For '-preview' modes (e.g. 'dev-preview'), Vite won't load '.env.dev'.
+  // For '-preview' modes (e.g. dev-preview), Vite won't load '.env.dev'.
   // Load the base mode's env vars and inject via define so import.meta.env stays correct.
   const define: Record<string, string> = {};
   if (mode.endsWith("-preview")) {
-    const baseMode = mode.slice(0, -"-preview".length);
+    const baseMode = mode.replace(/-preview$/, "");
     const baseEnv = loadEnv(baseMode, process.cwd(), "");
     for (const [k, v] of Object.entries(baseEnv)) {
       if (k.startsWith("VITE_")) {

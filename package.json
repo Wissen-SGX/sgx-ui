@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "build": "npm run build:local",
-    "build:local": "concurrently --kill-others-on-fail \"npm --workspace apps/auth-app run build\" \"npm --workspace apps/index-studio-app run build\" && npm --workspace apps/host-app run build:local",
+    "build:local": "concurrently --kill-others-on-fail \"npm --workspace apps/auth-app run build:ec2\" \"npm --workspace apps/index-studio-app run build:ec2\" && npm --workspace apps/host-app run build:ec2",
     "build:dev": "concurrently --kill-others-on-fail \"npm --workspace apps/auth-app run build:dev\" \"npm --workspace apps/index-studio-app run build:dev\" && npm --workspace apps/host-app run build:dev",
     "build:uat": "concurrently --kill-others-on-fail \"npm --workspace apps/auth-app run build:uat\" \"npm --workspace apps/index-studio-app run build:uat\" && npm --workspace apps/host-app run build:uat",
     "build:prod": "concurrently --kill-others-on-fail \"npm --workspace apps/auth-app run build:prod\" \"npm --workspace apps/index-studio-app run build:prod\" && npm --workspace apps/host-app run build:prod",

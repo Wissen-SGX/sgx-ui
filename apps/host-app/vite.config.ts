@@ -5,10 +5,12 @@ import { resolve } from "path";
 
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  // serve = vite dev server (dev:all), build = any vite build
-  // For builds without an env-file override (i.e. local/preview builds), default to preview ports.
-  // Docker builds supply VITE_AUTH_APP_URL / VITE_INDEX_STUDIO_APP_URL via their .env.dev/uat/prod files.
   const devHost = env.VITE_DEV_HOST || "localhost";
+
+  // VITE_AUTH_APP_URL / VITE_INDEX_STUDIO_APP_URL are set only in direct deploy modes:
+  //   dev / uat / production  →  .env.dev/.env.uat/.env.production  →  /auth/remoteEntry.js  (Nginx relative)
+  //   ec2                     →  .env.ec2 (no URL override)         →  template uses VITE_DEV_HOST
+  //   dev-preview / uat-preview / production-preview → no env file  →  localhost absolute (local vite preview)
   const authUrl =
     env.VITE_AUTH_APP_URL ||
     (command === "serve"
