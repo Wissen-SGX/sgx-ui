@@ -13,12 +13,12 @@ export default defineConfig(({ mode, command }) => {
     env.VITE_AUTH_APP_URL ||
     (command === "serve"
       ? `http://${devHost}:3001/remoteEntry.js`
-      : "http://localhost:4001/auth/remoteEntry.js");
+      : `http://${devHost}:4001/auth/remoteEntry.js`);
   const indexStudioUrl =
     env.VITE_INDEX_STUDIO_APP_URL ||
     (command === "serve"
       ? `http://${devHost}:3002/remoteEntry.js`
-      : "http://localhost:4002/index-studio/remoteEntry.js");
+      : `http://${devHost}:4002/index-studio/remoteEntry.js`);
 
   return {
     server: {

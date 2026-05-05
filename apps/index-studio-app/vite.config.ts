@@ -5,6 +5,7 @@ import { resolve } from "path";
 
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const devHost = env.VITE_DEV_HOST || "localhost";
   const isLocalDev = mode === "development";
   // 'vite build' with no --mode flag → mode='production' → start:local
   // 'vite build --mode dev-preview' → start:dev/uat/prod
@@ -13,7 +14,7 @@ export default defineConfig(({ mode, command }) => {
   const base = isLocalDev
     ? "/"
     : isPreviewBuild
-      ? "http://localhost:4002/index-studio/"
+      ? `http://${devHost}:4002/index-studio/`
       : "/index-studio/";
 
   // For '-preview' modes (e.g. 'dev-preview'), Vite won't load '.env.dev'.
