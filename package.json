@@ -46,7 +46,9 @@
     "start:prod": "npm run build:prod-preview && npm run preview:all:prod-preview",
     "test": "npm --workspaces --if-present run test",
     "test:watch": "npm --workspaces --if-present run test:watch",
-    "test:coverage": "npm --workspaces --if-present run test:coverage",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:watch": "npm --workspaces --if-present run test:coverage:watch",
+    "coverage:report": "open coverage/index.html",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
