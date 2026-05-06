@@ -44,6 +44,9 @@
     "start:dev": "npm run build:dev-preview && npm run preview:all:dev-preview",
     "start:uat": "npm run build:uat-preview && npm run preview:all:uat-preview",
     "start:prod": "npm run build:prod-preview && npm run preview:all:prod-preview",
+    "test": "npm --workspaces --if-present run test",
+    "test:watch": "npm --workspaces --if-present run test:watch",
+    "test:coverage": "npm --workspaces --if-present run test:coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -60,14 +63,20 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^25.6.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "5.0.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.12",
     "prettier": "^3.2.5",
     "tailwindcss": "^4.2.2",
     "typescript": "6.0.2",
-    "vite": "7.3.2"
+    "vite": "7.3.2",
+    "vitest": "^4.1.5"
   }
 }
