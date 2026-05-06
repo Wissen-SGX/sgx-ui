@@ -41,6 +41,7 @@ export interface BacktestResultItem {
   s3Path: string;
   fileName: string;
   createdDate: string;
+  downloadUrl: string;
 }
 
 export interface BacktestDetailApiData {
