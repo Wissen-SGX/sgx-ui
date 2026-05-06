@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, ChevronDown, RotateCw } from "lucide-react";
 import { STATUS_OPTIONS, TYPE_OPTIONS } from "@sgx/shared";
 
@@ -23,6 +23,21 @@ export default function BacktestFilters({
 }: BacktestFiltersProps) {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const typeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
+        setShowStatusDropdown(false);
+      }
+      if (typeRef.current && !typeRef.current.contains(e.target as Node)) {
+        setShowTypeDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleStatusSelect = (value: string) => {
     onStatusChange(value);
@@ -57,7 +72,7 @@ export default function BacktestFilters({
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="relative">
+        <div className="relative" ref={statusRef}>
           <button
             className="px-4 py-2.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
             style={{ borderColor: "#E5E7EB", color: "#374151" }}
@@ -87,7 +102,7 @@ export default function BacktestFilters({
           )}
         </div>
 
-        <div className="relative">
+        <div className="relative" ref={typeRef}>
           <button
             className="px-4 py-2.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
             style={{ borderColor: "#E5E7EB", color: "#374151" }}
@@ -101,7 +116,7 @@ export default function BacktestFilters({
           </button>
           {showTypeDropdown && (
             <div
-              className="absolute z-10 mt-1 w-56 bg-white rounded-lg shadow-lg border"
+              className="absolute right-0 z-10 mt-1 w-56 bg-white rounded-lg shadow-lg border"
               style={{ borderColor: "#E5E7EB" }}
             >
               {TYPE_OPTIONS.map(({ label, value }, i, arr) => (

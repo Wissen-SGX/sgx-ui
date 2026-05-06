@@ -1,19 +1,7 @@
-import {
-  Download,
-  FileText,
-  BarChart3,
-  Table,
-  RefreshCw,
-  Share2,
-  ChevronRight,
-} from "lucide-react";
+import { Download, FileText } from "lucide-react";
 import type { BacktestResultItem } from "@/features/backtest/types";
 
 export function ReportsTab({ results }: { results: BacktestResultItem[] }) {
-  const staticReports = [
-    { id: "result file", name: "result file", icon: FileText },
-  ];
-
   return (
     <div className="space-y-6">
       {/* API result files */}
@@ -45,20 +33,19 @@ export function ReportsTab({ results }: { results: BacktestResultItem[] }) {
                   </div>
                   <div>
                     <div className="text-sm" style={{ color: "#0B236B" }}>
-                      {item.fileName}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {item.resultType}
+                      {item.resultType.replace(/_/g, " ")}
                     </div>
                   </div>
                 </div>
-                <button
+                <a
+                  href={item.downloadUrl}
+                  download
                   className="flex items-center gap-1 text-sm"
                   style={{ color: "#0094B3" }}
                 >
                   <Download size={14} />
                   Download
-                </button>
+                </a>
               </div>
             ))}
           </div>
@@ -71,33 +58,6 @@ export function ReportsTab({ results }: { results: BacktestResultItem[] }) {
           No reports data available yet.
         </div>
       )}
-
-      {/* Static report types */}
-      {/* <div className="grid grid-cols-2 gap-4">
-        {staticReports.map(({ id, name, icon: Icon }) => (
-          <button
-            key={id}
-            className="border rounded-lg p-5 bg-white hover:bg-gray-50 transition-colors text-left flex items-center justify-between group"
-            style={{ borderColor: "#E5E7EB" }}
-          >
-            <div className="flex items-center gap-4">
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: "#E0F2FE" }}
-              >
-                <Icon size={20} style={{ color: "#0094B3" }} />
-              </div>
-              <span className="text-sm" style={{ color: "#0B236B" }}>
-                {name}
-              </span>
-            </div>
-            <ChevronRight
-              size={18}
-              className="text-gray-400 group-hover:text-gray-600 transition-colors"
-            />
-          </button>
-        ))}
-      </div> */}
     </div>
   );
 }
